@@ -3,6 +3,7 @@ import os
 
 import requests
 
+# TODO make url configurable, or just use prod?
 TEST_API_URL = 'https://testsentry.pdc.org'
 PROD_API_URL = 'https://sentry.pdc.org'
 
@@ -16,7 +17,7 @@ def get_active_hazards(auth_token: str) -> list[dict]:
 
 def main() -> None:
     auth_token = os.getenv('PDC_HAZARDS_AUTH_TOKEN')
-    assert auth_token
+    assert auth_token  # TODO raise appropriate exception
 
     hazards = get_active_hazards(auth_token)
     print(f'Hazards: {len(hazards)}')
