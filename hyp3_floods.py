@@ -15,6 +15,11 @@ def get_active_hazards(auth_token: str) -> list[dict]:
     return response.json()
 
 
+def filter_hazards(hazards: list[dict]) -> list[dict]:
+    # TODO should we include other hazard types?
+    return [hazard for hazard in hazards if hazard['type_ID'] == 'FLOOD']
+
+
 def main() -> None:
     auth_token = os.getenv('PDC_HAZARDS_AUTH_TOKEN')
     assert auth_token  # TODO raise appropriate exception
