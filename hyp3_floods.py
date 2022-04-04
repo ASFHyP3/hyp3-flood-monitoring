@@ -20,6 +20,11 @@ def filter_hazards(hazards: list[dict]) -> list[dict]:
     return [hazard for hazard in hazards if hazard['type_ID'] == 'FLOOD']
 
 
+def get_aoi(hazard: dict) -> str:
+    # TODO get real aoi
+    return f"POINT({hazard['longitude']} {hazard['latitude']})"
+
+
 def main() -> None:
     auth_token = os.getenv('PDC_HAZARDS_AUTH_TOKEN')
     assert auth_token  # TODO raise appropriate exception

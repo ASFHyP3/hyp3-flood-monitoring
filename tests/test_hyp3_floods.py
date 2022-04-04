@@ -16,3 +16,9 @@ def test_filter_hazards():
         {'hazard_ID': 5, 'type_ID': 'FLOOD'},
     ]
     assert hyp3_floods.filter_hazards(hazards) == filtered
+
+
+def test_get_aoi():
+    hazard = {'latitude': 37.949, 'longitude': -90.4527}
+    aoi = 'POINT(-90.4527 37.949)'
+    assert hyp3_floods.get_aoi(hazard) == aoi
