@@ -5,13 +5,33 @@ from datetime import datetime, timezone
 import requests
 
 # TODO make url configurable, or just use prod?
-TEST_API_URL = 'https://testsentry.pdc.org'
-PROD_API_URL = 'https://sentry.pdc.org'
+TEST_PDC_URL = 'https://testsentry.pdc.org'
+PROD_PDC_URL = 'https://sentry.pdc.org'
+
+# TODO make url configurable
+TEST_HYP3_URL = 'https://hyp3-test-api.asf.alaska.edu'
+PROD_HYP3_URL = 'https://hyp3-api.asf.alaska.edu'
 
 
 def get_active_hazards(auth_token: str) -> list[dict]:
-    url = f'{TEST_API_URL}/hp_srv/services/hazards/t/json/get_active_hazards'
+    url = f'{TEST_PDC_URL}/hp_srv/services/hazards/t/json/get_active_hazards'
     response = requests.get(url, headers={'Authorization': f'Bearer {auth_token}'})
+    response.raise_for_status()
+    return response.json()
+
+
+def get_hyp3_api_session(username, password) -> requests.Session:
+    url = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
+          '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
+    session = requests.Session()
+    response = session.get(url, auth=(username, password))
+    response.raise_for_status()
+    return session
+
+
+def get_existing_subscriptions(session: requests.Session) -> dict:
+    url = f'{TEST_HYP3_URL}/subscriptions'
+    response = session.get(url)
     response.raise_for_status()
     return response.json()
 
