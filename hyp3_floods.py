@@ -36,6 +36,13 @@ def get_existing_subscriptions(session: requests.Session) -> dict:
     return response.json()
 
 
+def submit_subscription(session: requests.Session, subscription: dict) -> dict:
+    url = f'{TEST_HYP3_URL}/subscriptions'
+    response = session.post(url, json=subscription)
+    response.raise_for_status()
+    return response.json()
+
+
 def filter_hazards(hazards: list[dict]) -> list[dict]:
     # TODO should we include other hazard types?
     return [hazard for hazard in hazards if hazard['type_ID'] == 'FLOOD']
