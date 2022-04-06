@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import requests
 
-# TODO make url configurable, or just use prod?
+# TODO what's the difference?
 TEST_PDC_URL = 'https://testsentry.pdc.org'
 PROD_PDC_URL = 'https://sentry.pdc.org'
 
