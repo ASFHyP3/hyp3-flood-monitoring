@@ -1,4 +1,3 @@
-import json
 import os
 from datetime import datetime, timezone
 
@@ -36,8 +35,9 @@ def get_existing_subscriptions(session: requests.Session) -> dict:
     return response.json()
 
 
-def submit_subscription(session: requests.Session, subscription: dict) -> dict:
+def submit_subscription(session: requests.Session, subscription: dict, validate_only=False) -> dict:
     url = f'{TEST_HYP3_URL}/subscriptions'
+    subscription['validate_only'] = validate_only
     response = session.post(url, json=subscription)
     response.raise_for_status()
     return response.json()
@@ -98,15 +98,29 @@ def get_hyp3_subscription(hazard: dict) -> dict:
     }
 
 
+def get_env_var(name: str) -> str:
+    val = os.getenv(name)
+    assert val, f'Expected env var {name}'  # TODO raise appropriate exception
+    return val
+
+
 def main() -> None:
-    auth_token = os.getenv('PDC_HAZARDS_AUTH_TOKEN')
-    assert auth_token  # TODO raise appropriate exception
+    auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN')
+    earthdata_username = get_env_var('EARTHDATA_USERNAME')
+    earthdata_password = get_env_var('EARTHDATA_PASSWORD')
+
+    session = get_hyp3_api_session(earthdata_username, earthdata_password)
 
     hazards = get_active_hazards(auth_token)
     print(f'Hazards: {len(hazards)}')
 
-    with open('hazards.json', 'w') as f:
-        f.write(json.dumps(hazards))
+    hazards = filter_hazards(hazards)
+    print(f'Filtered hazards: {len(hazards)}')
+
+    subscriptions = list(map(get_hyp3_subscription, hazards))
+    for subscription in subscriptions:
+        # TODO remove validate_only
+        submit_subscription(session, subscription, validate_only=True)
 
 
 if __name__ == '__main__':
