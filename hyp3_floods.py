@@ -5,12 +5,12 @@ from datetime import datetime, timezone
 import requests
 
 # TODO what's the difference?
-TEST_PDC_URL = 'https://testsentry.pdc.org'
-PROD_PDC_URL = 'https://sentry.pdc.org'
+PDC_URL_TEST = 'https://testsentry.pdc.org'
+PDC_URL_PROD = 'https://sentry.pdc.org'
 
 # TODO make url configurable
-TEST_HYP3_URL = 'https://hyp3-test-api.asf.alaska.edu'
-PROD_HYP3_URL = 'https://hyp3-api.asf.alaska.edu'
+HYP3_URL_TEST = 'https://hyp3-test-api.asf.alaska.edu'
+HYP3_URL_PROD = 'https://hyp3-api.asf.alaska.edu'
 
 
 def get_active_hazards(pdc_api_url: str, auth_token: str) -> list[dict]:
@@ -30,14 +30,14 @@ def get_hyp3_api_session(username, password) -> requests.Session:
 
 
 def get_existing_subscriptions(session: requests.Session) -> dict:
-    url = f'{TEST_HYP3_URL}/subscriptions'
+    url = f'{HYP3_URL_TEST}/subscriptions'
     response = session.get(url)
     response.raise_for_status()
     return response.json()
 
 
 def submit_subscription(session: requests.Session, subscription: dict, validate_only=False) -> dict:
-    url = f'{TEST_HYP3_URL}/subscriptions'
+    url = f'{HYP3_URL_TEST}/subscriptions'
     subscription['validate_only'] = validate_only
     response = session.post(url, json=subscription)
     response.raise_for_status()
@@ -114,7 +114,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    pdc_api_url = PROD_PDC_URL if args.pdc_prod else TEST_PDC_URL
+    pdc_api_url = PDC_URL_PROD if args.pdc_prod else PDC_URL_TEST
 
     auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN_PROD' if args.pdc_prod else 'PDC_HAZARDS_AUTH_TOKEN_TEST')
     earthdata_username = get_env_var('EARTHDATA_USERNAME')
