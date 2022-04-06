@@ -1,3 +1,4 @@
+import argparse
 import os
 from datetime import datetime, timezone
 
@@ -12,8 +13,8 @@ TEST_HYP3_URL = 'https://hyp3-test-api.asf.alaska.edu'
 PROD_HYP3_URL = 'https://hyp3-api.asf.alaska.edu'
 
 
-def get_active_hazards(auth_token: str) -> list[dict]:
-    url = f'{TEST_PDC_URL}/hp_srv/services/hazards/t/json/get_active_hazards'
+def get_active_hazards(pdc_api_url: str, auth_token: str) -> list[dict]:
+    url = f'{pdc_api_url}/hp_srv/services/hazards/t/json/get_active_hazards'
     response = requests.get(url, headers={'Authorization': f'Bearer {auth_token}'})
     response.raise_for_status()
     return response.json()
@@ -104,14 +105,24 @@ def get_env_var(name: str) -> str:
     return val
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--pdc-prod', action='store_true')
+    return parser.parse_args()
+
+
 def main() -> None:
-    auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN')
+    args = parse_args()
+
+    pdc_api_url = PROD_PDC_URL if args.pdc_prod else TEST_PDC_URL
+
+    auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN_PROD' if args.pdc_prod else 'PDC_HAZARDS_AUTH_TOKEN_TEST')
     earthdata_username = get_env_var('EARTHDATA_USERNAME')
     earthdata_password = get_env_var('EARTHDATA_PASSWORD')
 
     session = get_hyp3_api_session(earthdata_username, earthdata_password)
 
-    hazards = get_active_hazards(auth_token)
+    hazards = get_active_hazards(pdc_api_url, auth_token)
     print(f'Hazards: {len(hazards)}')
 
     hazards = filter_hazards(hazards)
