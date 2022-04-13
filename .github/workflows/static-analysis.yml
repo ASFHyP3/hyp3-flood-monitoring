@@ -10,6 +10,5 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: 3.9
-      - run: |
-          make install
-          make cfn-lint
+      - run: make install
+      - run: make cfn-lint
