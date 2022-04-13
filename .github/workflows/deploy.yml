@@ -7,7 +7,6 @@ on:
       - develop
 
 env:
-  # TODO create
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   CLOUDFORMATION_ROLE_ARN: ${{ secrets.CLOUDFORMATION_ROLE_ARN }}
@@ -36,6 +35,6 @@ jobs:
             --output-template-file packaged.yml
           aws cloudformation deploy \
             --template-file packaged.yml \
-            --stack-name hyp3-flood-monitoring \
+            --stack-name hyp3-flood-monitoring-test \
             --capabilities CAPABILITY_IAM \
             --role-arn ${CLOUDFORMATION_ROLE_ARN}
