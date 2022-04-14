@@ -25,8 +25,7 @@ jobs:
         with:
           python-version: 3.9
       - name: Install
-        # TODO
-        run: echo 'TODO install'
+        run: make install-lambda-deps
       - name: Package and deploy
         run: |
           aws cloudformation package \
