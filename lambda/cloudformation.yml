@@ -1,5 +1,17 @@
 AWSTemplateFormatVersion: 2010-09-09
 
+Parameters:
+  PDCHazardsAuthToken:
+    Type: String
+    NoEcho: true
+
+  EarthdataUsername:
+    Type: String
+
+  EarthdataPassword:
+    Type: String
+    NoEcho: true
+
 Resources:
   Role:
     Type: AWS::IAM::Role
@@ -15,6 +27,11 @@ Resources:
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
+      Environment:
+        Variables:
+          PDC_HAZARDS_AUTH_TOKEN: !Ref PDCHazardsAuthToken
+          EARTHDATA_USERNAME: !Ref EarthdataUsername
+          EARTHDATA_PASSWORD: !Ref EarthdataPassword
       Code: src/
       Handler: main.lambda_handler
       MemorySize: 128
