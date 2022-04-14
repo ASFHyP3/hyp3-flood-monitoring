@@ -111,7 +111,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> None:
+def lambda_handler(event, context) -> None:
     args = parse_args()
 
     pdc_api_url = PDC_URL_PROD if args.pdc_prod else PDC_URL_TEST
@@ -132,7 +132,3 @@ def main() -> None:
     for subscription in subscriptions:
         # TODO remove validate_only
         submit_subscription(session, subscription, validate_only=True)
-
-
-if __name__ == '__main__':
-    main()
