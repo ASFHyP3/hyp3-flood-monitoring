@@ -26,16 +26,28 @@ def test_get_aoi():
     assert hyp3_floods.get_aoi(hazard) == aoi
 
 
-def test_datetime_from_timestamp():
-    timestamp = '1639170543000'
+def test_datetime_from_timestamp_in_seconds():
+    timestamp = 1639170543
     date_time = datetime(year=2021, month=12, day=10, hour=21, minute=9, second=3, tzinfo=timezone.utc)
-    assert hyp3_floods.datetime_from_timestamp(timestamp) == date_time
+    assert hyp3_floods.datetime_from_timestamp_in_seconds(timestamp) == date_time
 
 
 def test_str_from_datetime():
     date_time = datetime(year=2021, month=12, day=10, hour=21, minute=9, second=3, tzinfo=timezone.utc)
     datetime_str = '2021-12-10T21:09:03Z'
     assert hyp3_floods.str_from_datetime(date_time) == datetime_str
+
+
+def test_datetime_str_from_timestamp_in_ms():
+    timestamp = 1639170543000
+    datetime_str = '2021-12-10T21:09:03Z'
+    assert hyp3_floods.datetime_str_from_timestamp_in_ms(timestamp) == datetime_str
+
+
+def test_datetime_str_from_timestamp_in_ms_truncate():
+    timestamp = 1639170543789
+    datetime_str = '2021-12-10T21:09:03Z'
+    assert hyp3_floods.datetime_str_from_timestamp_in_ms(timestamp) == datetime_str
 
 
 def test_get_hyp3_subscription():
@@ -46,7 +58,7 @@ def test_get_hyp3_subscription():
 
     hazard = {
         'hazard_ID': 42,
-        'start_Date': '1639170540000',
+        'start_Date': '1639170543789',
         'end_Date': '1639198800000',
         'latitude': 37.949,
         'longitude': -90.4527,
@@ -61,7 +73,7 @@ def test_get_hyp3_subscription():
                 'processingLevel': 'SLC',
                 'beamMode': ['IW'],
                 'polarization': ['VV+VH'],
-                'start': '2021-12-10T21:09:00Z',
+                'start': '2021-12-10T21:09:03Z',
                 'end': '2021-12-11T05:00:00Z',
                 'intersectsWith': 'POINT(-90.4527 37.949)'
             },

@@ -53,9 +53,8 @@ def get_aoi(hazard: dict) -> str:
     return f"POINT({hazard['longitude']} {hazard['latitude']})"
 
 
-def datetime_from_timestamp(timestamp: str) -> datetime:
-    # TODO confirm that PDC API is using POSIX timestamps in ms
-    return datetime.fromtimestamp(int(timestamp) / 1000, tz=timezone.utc)
+def datetime_from_timestamp_in_seconds(timestamp_in_seconds: int) -> datetime:
+    return datetime.fromtimestamp(timestamp_in_seconds, tz=timezone.utc)
 
 
 def str_from_datetime(date_time: datetime) -> str:
@@ -65,9 +64,13 @@ def str_from_datetime(date_time: datetime) -> str:
     return datetime_str.removesuffix('+00:00') + 'Z'
 
 
+def datetime_str_from_timestamp_in_ms(timestamp_in_ms: int) -> str:
+    return str_from_datetime(datetime_from_timestamp_in_seconds(timestamp_in_ms // 1000))
+
+
 def get_hyp3_subscription(hazard: dict) -> dict:
-    start = str_from_datetime(datetime_from_timestamp(hazard['start_Date']))
-    end = str_from_datetime(datetime_from_timestamp(hazard['end_Date']))
+    start = datetime_str_from_timestamp_in_ms(int(hazard['start_Date']))
+    end = datetime_str_from_timestamp_in_ms(int(hazard['end_Date']))
     aoi = get_aoi(hazard)
     name = f"PDC-hazard-{hazard['hazard_ID']}"
     return {
