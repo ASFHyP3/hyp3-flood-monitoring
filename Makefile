@@ -8,8 +8,10 @@ test:
 	export PYTHONPATH=${PWD}/lambda/src; \
 	pytest tests/
 
-# TODO flake8, mypy
-static: cfn-lint
+static: flake8 cfn-lint
+
+flake8:
+	flake8 --max-line-length=120 lambda tests
 
 cfn-lint:
 	cfn-lint lambda/cloudformation.yml --info --ignore-checks W3002
