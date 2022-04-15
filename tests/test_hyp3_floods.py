@@ -52,14 +52,11 @@ def test_datetime_str_from_timestamp_in_ms_truncate():
 
 def test_get_hyp3_subscription():
     # TODO use uuid instead of hazard id?
-    # TODO add some buffer to start/end datetimes?
-    # TODO confirm that we want to use start_Date and end_Date
-    #  (there are other timestamp fields in the hazard dict)
+    # TODO add some buffer to start datetime?
 
     hazard = {
         'hazard_ID': 42,
         'start_Date': '1639170543789',
-        'end_Date': '1639198800000',
         'latitude': 37.949,
         'longitude': -90.4527,
     }
@@ -74,7 +71,6 @@ def test_get_hyp3_subscription():
                 'beamMode': ['IW'],
                 'polarization': ['VV+VH'],
                 'start': '2021-12-10T21:09:03Z',
-                'end': '2021-12-11T05:00:00Z',
                 'intersectsWith': 'POINT(-90.4527 37.949)'
             },
             'job_specification': {

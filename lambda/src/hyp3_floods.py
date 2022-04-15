@@ -70,7 +70,6 @@ def datetime_str_from_timestamp_in_ms(timestamp_in_ms: int) -> str:
 
 def get_hyp3_subscription(hazard: dict) -> dict:
     start = datetime_str_from_timestamp_in_ms(int(hazard['start_Date']))
-    end = datetime_str_from_timestamp_in_ms(int(hazard['end_Date']))
     aoi = get_aoi(hazard)
     name = f"PDC-hazard-{hazard['hazard_ID']}"
     return {
@@ -81,7 +80,7 @@ def get_hyp3_subscription(hazard: dict) -> dict:
                 'beamMode': ['IW'],
                 'polarization': ['VV+VH'],
                 'start': start,
-                'end': end,
+                # TODO include end?
                 'intersectsWith': aoi
             },
             'job_specification': {
