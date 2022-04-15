@@ -5,7 +5,8 @@ install-lambda-deps:
 	python -m pip install -r lambda/requirements.txt
 
 test:
-	python -m pytest tests/
+	export PYTHONPATH=${PWD}/lambda/src; \
+	pytest tests/
 
 # TODO flake8, mypy
 static: cfn-lint
