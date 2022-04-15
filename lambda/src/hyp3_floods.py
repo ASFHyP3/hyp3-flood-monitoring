@@ -64,12 +64,12 @@ def str_from_datetime(date_time: datetime) -> str:
     return datetime_str.removesuffix('+00:00') + 'Z'
 
 
-def datetime_str_from_timestamp_in_ms(timestamp_in_ms: int) -> str:
+def start_datetime_str_from_timestamp_in_ms(timestamp_in_ms: int) -> str:
     return str_from_datetime(datetime_from_timestamp_in_seconds(timestamp_in_ms // 1000))
 
 
 def get_hyp3_subscription(hazard: dict) -> dict:
-    start = datetime_str_from_timestamp_in_ms(int(hazard['start_Date']))
+    start = start_datetime_str_from_timestamp_in_ms(int(hazard['start_Date']))
     aoi = get_aoi(hazard)
     name = f"PDC-hazard-{hazard['hazard_ID']}"
     return {

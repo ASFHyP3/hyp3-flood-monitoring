@@ -38,16 +38,16 @@ def test_str_from_datetime():
     assert hyp3_floods.str_from_datetime(date_time) == datetime_str
 
 
-def test_datetime_str_from_timestamp_in_ms():
+def test_start_datetime_str_from_timestamp_in_ms():
     timestamp = 1639170543000
     datetime_str = '2021-12-10T21:09:03Z'
-    assert hyp3_floods.datetime_str_from_timestamp_in_ms(timestamp) == datetime_str
+    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp) == datetime_str
 
 
-def test_datetime_str_from_timestamp_in_ms_truncate():
+def test_start_datetime_str_from_timestamp_in_ms_truncate():
     timestamp = 1639170543789
     datetime_str = '2021-12-10T21:09:03Z'
-    assert hyp3_floods.datetime_str_from_timestamp_in_ms(timestamp) == datetime_str
+    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp) == datetime_str
 
 
 def test_get_hyp3_subscription():
