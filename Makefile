@@ -1,11 +1,18 @@
+export PYTHONPATH = ${PWD}/lambda/src
+
 install:
 	python -m pip install -r requirements.txt
 
 install-lambda-deps:
 	python -m pip install -r lambda/requirements.txt
 
+lambda_env ?= env/dev.env
+run:
+	ENV_VARS=$$(xargs < $(lambda_env)) && \
+	export $$ENV_VARS && \
+	python -c 'from hyp3_floods import lambda_handler; lambda_handler(None, None)'
+
 test:
-	export PYTHONPATH=${PWD}/lambda/src; \
 	pytest tests/
 
 static: flake8 cfn-lint
