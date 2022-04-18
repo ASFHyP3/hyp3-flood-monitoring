@@ -58,6 +58,18 @@ def test_start_datetime_str_from_timestamp_in_ms_truncate():
     assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(1)) == datetime_str_with_delta
 
 
+def test_job_name_from_hazard_uuid():
+    uuid = '595467f9-77f2-4036-87d3-ef9e5e4ad939'
+    name = 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
+    assert hyp3_floods.job_name_from_hazard_uuid(uuid) == name
+
+
+def test_hazard_uuid_from_job_name():
+    name = 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
+    uuid = '595467f9-77f2-4036-87d3-ef9e5e4ad939'
+    assert hyp3_floods.hazard_uuid_from_job_name(name) == uuid
+
+
 def test_get_hyp3_subscription():
     hazard = {
         'uuid': '595467f9-77f2-4036-87d3-ef9e5e4ad939',

@@ -68,11 +68,21 @@ def start_datetime_str_from_timestamp_in_ms(timestamp_in_ms: int, delta: timedel
     return str_from_datetime(datetime_from_timestamp_in_seconds(timestamp_in_ms // 1000) - delta)
 
 
+def job_name_from_hazard_uuid(uuid: str) -> str:
+    return f'PDC-hazard-{uuid}'
+
+
+def hazard_uuid_from_job_name(name: str) -> str:
+    prefix = 'PDC-hazard-'
+    assert name.startswith(prefix)
+    return name.removeprefix(prefix)
+
+
 def get_hyp3_subscription(hazard: dict, start_delta=timedelta(days=1)) -> dict:
     # TODO decide on appropriate default value for start_delta
     start = start_datetime_str_from_timestamp_in_ms(int(hazard['start_Date']), start_delta)
     aoi = get_aoi(hazard)
-    name = f"PDC-hazard-{hazard['uuid']}"
+    name = job_name_from_hazard_uuid(hazard['uuid'])
     return {
         'subscription': {
             'search_parameters': {
