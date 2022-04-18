@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import hyp3_floods
 
@@ -40,19 +40,25 @@ def test_str_from_datetime():
 
 def test_start_datetime_str_from_timestamp_in_ms():
     timestamp = 1639170543000
+
     datetime_str = '2021-12-10T21:09:03Z'
-    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp) == datetime_str
+    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(0)) == datetime_str
+
+    datetime_str_with_delta = '2021-12-09T21:09:03Z'
+    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(1)) == datetime_str_with_delta
 
 
 def test_start_datetime_str_from_timestamp_in_ms_truncate():
     timestamp = 1639170543789
+
     datetime_str = '2021-12-10T21:09:03Z'
-    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp) == datetime_str
+    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(0)) == datetime_str
+
+    datetime_str_with_delta = '2021-12-09T21:09:03Z'
+    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(1)) == datetime_str_with_delta
 
 
 def test_get_hyp3_subscription():
-    # TODO add some buffer to start datetime?
-
     hazard = {
         'uuid': '595467f9-77f2-4036-87d3-ef9e5e4ad939',
         'start_Date': '1639170543789',
@@ -88,4 +94,7 @@ def test_get_hyp3_subscription():
         }
     }
 
+    assert hyp3_floods.get_hyp3_subscription(hazard, start_delta=timedelta(0)) == subscription
+
+    subscription['subscription']['search_parameters']['start'] = '2021-12-09T21:09:03Z'
     assert hyp3_floods.get_hyp3_subscription(hazard) == subscription

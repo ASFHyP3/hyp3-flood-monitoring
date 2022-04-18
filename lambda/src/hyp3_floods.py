@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import requests
 
@@ -64,12 +64,13 @@ def str_from_datetime(date_time: datetime) -> str:
     return datetime_str.removesuffix('+00:00') + 'Z'
 
 
-def start_datetime_str_from_timestamp_in_ms(timestamp_in_ms: int) -> str:
-    return str_from_datetime(datetime_from_timestamp_in_seconds(timestamp_in_ms // 1000))
+def start_datetime_str_from_timestamp_in_ms(timestamp_in_ms: int, delta: timedelta) -> str:
+    return str_from_datetime(datetime_from_timestamp_in_seconds(timestamp_in_ms // 1000) - delta)
 
 
-def get_hyp3_subscription(hazard: dict) -> dict:
-    start = start_datetime_str_from_timestamp_in_ms(int(hazard['start_Date']))
+def get_hyp3_subscription(hazard: dict, start_delta=timedelta(days=1)) -> dict:
+    # TODO decide on appropriate default value for start_delta
+    start = start_datetime_str_from_timestamp_in_ms(int(hazard['start_Date']), start_delta)
     aoi = get_aoi(hazard)
     name = f"PDC-hazard-{hazard['uuid']}"
     return {
