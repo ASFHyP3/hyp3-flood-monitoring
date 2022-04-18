@@ -51,11 +51,10 @@ def test_start_datetime_str_from_timestamp_in_ms_truncate():
 
 
 def test_get_hyp3_subscription():
-    # TODO use uuid instead of hazard id?
     # TODO add some buffer to start datetime?
 
     hazard = {
-        'hazard_ID': 42,
+        'uuid': '595467f9-77f2-4036-87d3-ef9e5e4ad939',
         'start_Date': '1639170543789',
         'latitude': 37.949,
         'longitude': -90.4527,
@@ -84,7 +83,7 @@ def test_get_hyp3_subscription():
                     'hand_fraction': 0.8,
                     'membership_threshold': 0.45
                 },
-                'name': 'PDC-hazard-42'
+                'name': 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
             }
         }
     }

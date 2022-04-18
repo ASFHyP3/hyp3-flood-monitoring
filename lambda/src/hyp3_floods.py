@@ -71,7 +71,7 @@ def start_datetime_str_from_timestamp_in_ms(timestamp_in_ms: int) -> str:
 def get_hyp3_subscription(hazard: dict) -> dict:
     start = start_datetime_str_from_timestamp_in_ms(int(hazard['start_Date']))
     aoi = get_aoi(hazard)
-    name = f"PDC-hazard-{hazard['hazard_ID']}"
+    name = f"PDC-hazard-{hazard['uuid']}"
     return {
         'subscription': {
             'search_parameters': {
