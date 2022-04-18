@@ -81,7 +81,6 @@ def get_hyp3_subscription(hazard: dict, start_delta=timedelta(days=1)) -> dict:
                 'beamMode': ['IW'],
                 'polarization': ['VV+VH'],
                 'start': start,
-                # TODO include end?
                 'intersectsWith': aoi
             },
             'job_specification': {
