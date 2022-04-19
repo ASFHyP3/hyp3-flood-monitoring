@@ -19,6 +19,10 @@ def get_active_hazards(pdc_api_url: str, auth_token: str) -> list[dict]:
     return response.json()
 
 
+def get_hazard_uuids(hazards: list[dict]) -> frozenset[str]:
+    return frozenset([hazard['uuid'] for hazard in hazards])
+
+
 def get_hyp3_api_session(username, password) -> requests.Session:
     url = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
           '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'

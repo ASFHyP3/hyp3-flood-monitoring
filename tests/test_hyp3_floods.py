@@ -5,6 +5,16 @@ import pytest
 import hyp3_floods
 
 
+def test_get_hazard_uuids():
+    hazards = [
+        {'uuid': 1},
+        {'uuid': 2},
+        {'uuid': 3},
+    ]
+    uuids = frozenset([1, 2, 3])
+    assert hyp3_floods.get_hazard_uuids(hazards) == uuids
+
+
 def test_get_subscription_names():
     subscriptions = {
         'subscriptions': [
@@ -17,7 +27,7 @@ def test_get_subscription_names():
     assert hyp3_floods.get_subscription_names(subscriptions) == names
 
 
-def test_get_subscription_names_duplicate_names():
+def test_get_subscription_names_duplicates():
     subscriptions = {
         'subscriptions': [
             {'job_specification': {'name': 'aaa'}},
