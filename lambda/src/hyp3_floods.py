@@ -29,10 +29,21 @@ def get_hyp3_api_session(username, password) -> requests.Session:
 
 
 def get_existing_subscriptions(session: requests.Session, hyp3_url: str) -> dict:
+    # TODO get enabled subscriptions
     url = f'{hyp3_url}/subscriptions'
     response = session.get(url)
     response.raise_for_status()
     return response.json()
+
+
+def get_subscription_names(subscriptions: dict) -> frozenset[str]:
+    subscriptions_list = subscriptions['subscriptions']
+    names = frozenset(sub['job_specification']['name'] for sub in subscriptions_list)
+
+    if len(names) != len(subscriptions_list):
+        raise ValueError('Subscriptions list contains repeated job names')
+
+    return names
 
 
 def submit_subscription(session: requests.Session, hyp3_url: str, subscription: dict, validate_only=False) -> dict:
@@ -74,11 +85,11 @@ def get_end_datetime_str(today: date) -> str:
     return str_from_datetime(end)
 
 
-def job_name_from_hazard_uuid(uuid: str) -> str:
+def subscription_name_from_hazard_uuid(uuid: str) -> str:
     return f'PDC-hazard-{uuid}'
 
 
-def hazard_uuid_from_job_name(name: str) -> str:
+def hazard_uuid_from_subscription_name(name: str) -> str:
     prefix = 'PDC-hazard-'
     assert name.startswith(prefix)
     return name.removeprefix(prefix)
@@ -89,7 +100,7 @@ def get_hyp3_subscription(hazard: dict, today: date, start_delta=timedelta(days=
     start = start_datetime_str_from_timestamp_in_ms(int(hazard['start_Date']), start_delta)
     end = get_end_datetime_str(today)
     aoi = get_aoi(hazard)
-    name = job_name_from_hazard_uuid(hazard['uuid'])
+    name = subscription_name_from_hazard_uuid(hazard['uuid'])
     return {
         'subscription': {
             'search_parameters': {

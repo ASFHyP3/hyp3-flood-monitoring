@@ -1,6 +1,33 @@
 from datetime import date, datetime, timedelta, timezone
 
+import pytest
+
 import hyp3_floods
+
+
+def test_get_subscription_names():
+    subscriptions = {
+        'subscriptions': [
+            {'job_specification': {'name': 'aaa'}},
+            {'job_specification': {'name': 'bbb'}},
+            {'job_specification': {'name': 'ccc'}},
+        ]
+    }
+    names = frozenset(['aaa', 'bbb', 'ccc'])
+    assert hyp3_floods.get_subscription_names(subscriptions) == names
+
+
+def test_get_subscription_names_duplicate_names():
+    subscriptions = {
+        'subscriptions': [
+            {'job_specification': {'name': 'aaa'}},
+            {'job_specification': {'name': 'bbb'}},
+            {'job_specification': {'name': 'ccc'}},
+            {'job_specification': {'name': 'bbb'}},
+        ]
+    }
+    with pytest.raises(ValueError):
+        hyp3_floods.get_subscription_names(subscriptions)
 
 
 def test_filter_hazards():
@@ -64,16 +91,16 @@ def test_get_end_datetime_str():
     assert hyp3_floods.get_end_datetime_str(today) == datetime_str
 
 
-def test_job_name_from_hazard_uuid():
+def test_subscription_name_from_hazard_uuid():
     uuid = '595467f9-77f2-4036-87d3-ef9e5e4ad939'
     name = 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
-    assert hyp3_floods.job_name_from_hazard_uuid(uuid) == name
+    assert hyp3_floods.subscription_name_from_hazard_uuid(uuid) == name
 
 
-def test_hazard_uuid_from_job_name():
+def test_hazard_uuid_from_subscription_name():
     name = 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
     uuid = '595467f9-77f2-4036-87d3-ef9e5e4ad939'
-    assert hyp3_floods.hazard_uuid_from_job_name(name) == uuid
+    assert hyp3_floods.hazard_uuid_from_subscription_name(name) == uuid
 
 
 def test_get_hyp3_subscription():
