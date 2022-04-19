@@ -84,9 +84,10 @@ def hazard_uuid_from_job_name(name: str) -> str:
     return name.removeprefix(prefix)
 
 
-def get_hyp3_subscription(hazard: dict, start_delta=timedelta(days=1)) -> dict:
+def get_hyp3_subscription(hazard: dict, today: date, start_delta=timedelta(days=1)) -> dict:
     # TODO decide on appropriate default value for start_delta
     start = start_datetime_str_from_timestamp_in_ms(int(hazard['start_Date']), start_delta)
+    end = get_end_datetime_str(today)
     aoi = get_aoi(hazard)
     name = job_name_from_hazard_uuid(hazard['uuid'])
     return {
@@ -97,6 +98,7 @@ def get_hyp3_subscription(hazard: dict, start_delta=timedelta(days=1)) -> dict:
                 'beamMode': ['IW'],
                 'polarization': ['VV+VH'],
                 'start': start,
+                'end': end,
                 'intersectsWith': aoi
             },
             'job_specification': {

@@ -84,6 +84,8 @@ def test_get_hyp3_subscription():
         'longitude': -90.4527,
     }
 
+    today = date(year=2022, month=4, day=18)
+
     # Adapted from:
     # https://github.com/ASFHyP3/hyp3-nasa-disasters/blob/main/data_management/pdc_brazil.json
     subscription = {
@@ -94,6 +96,7 @@ def test_get_hyp3_subscription():
                 'beamMode': ['IW'],
                 'polarization': ['VV+VH'],
                 'start': '2021-12-10T21:09:03Z',
+                'end': '2022-10-15T00:00:00Z',
                 'intersectsWith': 'POINT(-90.4527 37.949)'
             },
             'job_specification': {
@@ -112,7 +115,7 @@ def test_get_hyp3_subscription():
         }
     }
 
-    assert hyp3_floods.get_hyp3_subscription(hazard, start_delta=timedelta(0)) == subscription
+    assert hyp3_floods.get_hyp3_subscription(hazard, today, start_delta=timedelta(0)) == subscription
 
     subscription['subscription']['search_parameters']['start'] = '2021-12-09T21:09:03Z'
-    assert hyp3_floods.get_hyp3_subscription(hazard) == subscription
+    assert hyp3_floods.get_hyp3_subscription(hazard, today) == subscription
