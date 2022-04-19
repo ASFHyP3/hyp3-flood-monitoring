@@ -40,14 +40,16 @@ def get_existing_subscriptions(session: requests.Session, hyp3_url: str) -> dict
     return response.json()
 
 
-def get_subscription_names(subscriptions: dict) -> frozenset[str]:
+def get_hazard_uuids_from_subscriptions(subscriptions: dict) -> frozenset[str]:
     subscriptions_list = subscriptions['subscriptions']
-    names = frozenset(sub['job_specification']['name'] for sub in subscriptions_list)
+    uuids = frozenset(
+        hazard_uuid_from_subscription_name(sub['job_specification']['name']) for sub in subscriptions_list
+    )
 
-    if len(names) != len(subscriptions_list):
+    if len(uuids) != len(subscriptions_list):
         raise ValueError('Subscriptions list contains repeated job names')
 
-    return names
+    return uuids
 
 
 def submit_subscription(session: requests.Session, hyp3_url: str, subscription: dict, validate_only=False) -> dict:

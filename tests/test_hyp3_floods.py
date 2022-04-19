@@ -15,29 +15,29 @@ def test_get_hazard_uuids():
     assert hyp3_floods.get_hazard_uuids(hazards) == uuids
 
 
-def test_get_subscription_names():
+def test_get_hazard_uuids_from_subscriptions():
     subscriptions = {
         'subscriptions': [
-            {'job_specification': {'name': 'aaa'}},
-            {'job_specification': {'name': 'bbb'}},
-            {'job_specification': {'name': 'ccc'}},
+            {'job_specification': {'name': 'PDC-hazard-111'}},
+            {'job_specification': {'name': 'PDC-hazard-222'}},
+            {'job_specification': {'name': 'PDC-hazard-333'}},
         ]
     }
-    names = frozenset(['aaa', 'bbb', 'ccc'])
-    assert hyp3_floods.get_subscription_names(subscriptions) == names
+    uuids = frozenset(['111', '222', '333'])
+    assert hyp3_floods.get_hazard_uuids_from_subscriptions(subscriptions) == uuids
 
 
-def test_get_subscription_names_duplicates():
+def test_get_hazard_uuids_from_subscriptions_with_duplicates():
     subscriptions = {
         'subscriptions': [
-            {'job_specification': {'name': 'aaa'}},
-            {'job_specification': {'name': 'bbb'}},
-            {'job_specification': {'name': 'ccc'}},
-            {'job_specification': {'name': 'bbb'}},
+            {'job_specification': {'name': 'PDC-hazard-111'}},
+            {'job_specification': {'name': 'PDC-hazard-222'}},
+            {'job_specification': {'name': 'PDC-hazard-333'}},
+            {'job_specification': {'name': 'PDC-hazard-222'}},
         ]
     }
     with pytest.raises(ValueError):
-        hyp3_floods.get_subscription_names(subscriptions)
+        hyp3_floods.get_hazard_uuids_from_subscriptions(subscriptions)
 
 
 def test_filter_hazards():
