@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import hyp3_floods
 
@@ -56,6 +56,12 @@ def test_start_datetime_str_from_timestamp_in_ms_truncate():
 
     datetime_str_with_delta = '2021-12-09T21:09:03Z'
     assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(1)) == datetime_str_with_delta
+
+
+def test_get_end_datetime_str():
+    today = date(year=2022, month=4, day=18)
+    datetime_str = '2022-10-15T00:00:00Z'
+    assert hyp3_floods.get_end_datetime_str(today) == datetime_str
 
 
 def test_job_name_from_hazard_uuid():

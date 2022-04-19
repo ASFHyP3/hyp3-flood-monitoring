@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import requests
 
@@ -66,6 +66,12 @@ def str_from_datetime(date_time: datetime) -> str:
 
 def start_datetime_str_from_timestamp_in_ms(timestamp_in_ms: int, delta: timedelta) -> str:
     return str_from_datetime(datetime_from_timestamp_in_seconds(timestamp_in_ms // 1000) - delta)
+
+
+def get_end_datetime_str(today: date) -> str:
+    today_datetime = datetime(year=today.year, month=today.month, day=today.day, tzinfo=timezone.utc)
+    end = today_datetime + timedelta(days=180)
+    return str_from_datetime(end)
 
 
 def job_name_from_hazard_uuid(uuid: str) -> str:
