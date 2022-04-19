@@ -140,7 +140,8 @@ def lambda_handler(event, context) -> None:
     hazards = filter_hazards(hazards)
     print(f'Filtered hazards: {len(hazards)}')
 
-    subscriptions = list(map(get_hyp3_subscription, hazards))
+    today = datetime.utcnow().date()
+    subscriptions = [get_hyp3_subscription(hazard, today) for hazard in hazards]
     for subscription in subscriptions:
         # TODO remove validate_only
         submit_subscription(session, hyp3_url, subscription, validate_only=True)
