@@ -143,8 +143,5 @@ def lambda_handler(event, context) -> None:
     today = datetime.utcnow().date()
     subscriptions = [get_hyp3_subscription(hazard, today) for hazard in hazards]
     for subscription in subscriptions:
-        # TODO remove this after increasing hyp3 job name length limit
-        subscription['subscription']['job_specification']['name'] = 'TODO'
-
         # TODO remove validate_only
         submit_subscription(session, hyp3_url, subscription, validate_only=True)
