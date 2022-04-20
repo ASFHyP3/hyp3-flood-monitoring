@@ -152,18 +152,18 @@ def lambda_handler(event, context) -> None:
 
     session = get_hyp3_api_session(earthdata_username, earthdata_password)
 
-    hazards = get_active_hazards(pdc_api_url, auth_token)
-    print(f'Hazards: {len(hazards)}')
+    active_hazards = get_active_hazards(pdc_api_url, auth_token)
+    print(f'Hazards: {len(active_hazards)}')
 
-    hazards = filter_hazards(hazards)
-    print(f'Filtered hazards: {len(hazards)}')
+    active_hazards = filter_hazards(active_hazards)
+    print(f'Filtered hazards: {len(active_hazards)}')
 
-    existing_subscriptions = get_existing_subscriptions(session, hyp3_url)
-    hazard_uuids_to_subscription_ids = map_hazard_uuids_to_subscription_ids(existing_subscriptions)
+    enabled_subscriptions = get_existing_subscriptions(session, hyp3_url)
+    hazard_uuids_to_subscription_ids = map_hazard_uuids_to_subscription_ids(enabled_subscriptions)
     # TODO create new subs and disable ones for inactive hazards
 
     today = datetime.utcnow().date()
-    subscriptions = [get_hyp3_subscription(hazard, today) for hazard in hazards]
+    subscriptions = [get_hyp3_subscription(hazard, today) for hazard in active_hazards]
     for subscription in subscriptions:
         # TODO remove validate_only
         submit_subscription(session, hyp3_url, subscription, validate_only=True)
