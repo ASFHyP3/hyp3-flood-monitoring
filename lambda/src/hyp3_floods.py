@@ -35,10 +35,9 @@ def disable_subscription(session: requests.Session, hyp3_url: str, subscription_
     return response.json()
 
 
-def get_existing_subscriptions(session: requests.Session, hyp3_url: str) -> dict:
-    # TODO get enabled subscriptions
+def get_enabled_subscriptions(session: requests.Session, hyp3_url: str) -> dict:
     url = f'{hyp3_url}/subscriptions'
-    response = session.get(url)
+    response = session.get(url, params={'enabled': 'true'})
     response.raise_for_status()
     return response.json()
 
@@ -161,7 +160,7 @@ def lambda_handler(event, context) -> None:
     active_hazards = filter_hazards(active_hazards)
     print(f'Filtered hazards: {len(active_hazards)}')
 
-    enabled_subscriptions = get_existing_subscriptions(session, hyp3_url)
+    enabled_subscriptions = get_enabled_subscriptions(session, hyp3_url)
 
     new_active_hazards, inactive_hazard_subscription_ids = \
         get_new_and_inactive_hazards(active_hazards, enabled_subscriptions)
