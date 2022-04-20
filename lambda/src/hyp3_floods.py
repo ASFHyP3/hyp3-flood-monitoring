@@ -193,7 +193,7 @@ def lambda_handler(event, context) -> None:
         get_new_and_inactive_hazards(active_hazards, enabled_subscriptions)
 
     today = datetime.utcnow().date()
-    subscriptions = [get_hyp3_subscription(hazard, today) for hazard in new_active_hazards]
-    submit_subscriptions(session, hyp3_url, subscriptions)
+    new_subscriptions = [get_hyp3_subscription(hazard, today) for hazard in new_active_hazards]
+    submit_subscriptions(session, hyp3_url, new_subscriptions)
 
     disable_subscriptions(session, hyp3_url, inactive_hazard_subscription_ids)
