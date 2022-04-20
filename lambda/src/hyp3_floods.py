@@ -41,6 +41,7 @@ def get_existing_subscriptions(session: requests.Session, hyp3_url: str) -> dict
     return response.json()
 
 
+# TODO move definition
 def map_hazard_uuids_to_subscription_ids(subscriptions: dict) -> dict[str, str]:
     subscriptions_list = subscriptions['subscriptions']
     result = {
