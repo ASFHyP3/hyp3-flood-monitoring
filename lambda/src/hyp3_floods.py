@@ -42,7 +42,32 @@ def get_enabled_subscriptions(session: requests.Session, hyp3_url: str) -> dict:
     return response.json()
 
 
-# TODO move definition
+def submit_subscription(session: requests.Session, hyp3_url: str, subscription: dict, validate_only=False) -> dict:
+    url = f'{hyp3_url}/subscriptions'
+    subscription['validate_only'] = validate_only
+    response = session.post(url, json=subscription)
+    response.raise_for_status()
+    return response.json()
+
+
+def get_new_and_inactive_hazards(
+        active_hazards: list[dict],
+        enabled_subscriptions: dict) -> tuple[list[dict], list[str]]:
+
+    hazard_uuids_to_subscription_ids = map_hazard_uuids_to_subscription_ids(enabled_subscriptions)
+    subscribed_hazard_uuids = hazard_uuids_to_subscription_ids.keys()
+
+    new_active_hazards = [hazard for hazard in active_hazards if hazard['uuid'] not in subscribed_hazard_uuids]
+
+    active_hazard_uuids = frozenset(hazard['uuid'] for hazard in active_hazards)
+    inactive_hazard_subscription_ids = [
+        hazard_uuids_to_subscription_ids[uuid] for uuid in subscribed_hazard_uuids
+        if uuid not in active_hazard_uuids
+    ]
+
+    return new_active_hazards, inactive_hazard_subscription_ids
+
+
 def map_hazard_uuids_to_subscription_ids(subscriptions: dict) -> dict[str, str]:
     subscriptions_list = subscriptions['subscriptions']
     result = {
@@ -52,14 +77,6 @@ def map_hazard_uuids_to_subscription_ids(subscriptions: dict) -> dict[str, str]:
     if len(result) != len(subscriptions_list):
         raise ValueError('Subscriptions list contains repeated job names')
     return result
-
-
-def submit_subscription(session: requests.Session, hyp3_url: str, subscription: dict, validate_only=False) -> dict:
-    url = f'{hyp3_url}/subscriptions'
-    subscription['validate_only'] = validate_only
-    response = session.post(url, json=subscription)
-    response.raise_for_status()
-    return response.json()
 
 
 def filter_hazards(hazards: list[dict]) -> list[dict]:
@@ -172,22 +189,3 @@ def lambda_handler(event, context) -> None:
 
     for subscription_id in inactive_hazard_subscription_ids:
         disable_subscription(session, hyp3_url, subscription_id)
-
-
-# TODO move definition
-def get_new_and_inactive_hazards(
-        active_hazards: list[dict],
-        enabled_subscriptions: dict) -> tuple[list[dict], list[str]]:
-
-    hazard_uuids_to_subscription_ids = map_hazard_uuids_to_subscription_ids(enabled_subscriptions)
-    subscribed_hazard_uuids = hazard_uuids_to_subscription_ids.keys()
-
-    new_active_hazards = [hazard for hazard in active_hazards if hazard['uuid'] not in subscribed_hazard_uuids]
-
-    active_hazard_uuids = frozenset(hazard['uuid'] for hazard in active_hazards)
-    inactive_hazard_subscription_ids = [
-        hazard_uuids_to_subscription_ids[uuid] for uuid in subscribed_hazard_uuids
-        if uuid not in active_hazard_uuids
-    ]
-
-    return new_active_hazards, inactive_hazard_subscription_ids
