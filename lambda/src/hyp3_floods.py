@@ -50,6 +50,16 @@ def disable_subscription(session: requests.Session, hyp3_url: str, subscription_
     return response.json()
 
 
+def submit_subscriptions(session: requests.Session, hyp3_url: str, subscriptions: list[dict]) -> None:
+    for subscription in subscriptions:
+        submit_subscription(session, hyp3_url, subscription)
+
+
+def disable_subscriptions(session: requests.Session, hyp3_url: str, subscription_ids: list[str]) -> None:
+    for subscription_id in subscription_ids:
+        disable_subscription(session, hyp3_url, subscription_id)
+
+
 def get_new_and_inactive_hazards(
         active_hazards: list[dict],
         enabled_subscriptions: dict) -> tuple[list[dict], list[str]]:
@@ -184,8 +194,6 @@ def lambda_handler(event, context) -> None:
 
     today = datetime.utcnow().date()
     subscriptions = [get_hyp3_subscription(hazard, today) for hazard in new_active_hazards]
-    for subscription in subscriptions:
-        submit_subscription(session, hyp3_url, subscription)
+    submit_subscriptions(session, hyp3_url, subscriptions)
 
-    for subscription_id in inactive_hazard_subscription_ids:
-        disable_subscription(session, hyp3_url, subscription_id)
+    disable_subscriptions(session, hyp3_url, inactive_hazard_subscription_ids)
