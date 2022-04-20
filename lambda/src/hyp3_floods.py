@@ -19,10 +19,6 @@ def get_active_hazards(pdc_api_url: str, auth_token: str) -> list[dict]:
     return response.json()
 
 
-def get_hazard_uuids(hazards: list[dict]) -> frozenset[str]:
-    return frozenset([hazard['uuid'] for hazard in hazards])
-
-
 def get_hyp3_api_session(username, password) -> requests.Session:
     url = 'https://urs.earthdata.nasa.gov/oauth/authorize?response_type=code&client_id=BO_n7nTIlMljdvU6kRRB3g' \
           '&redirect_uri=https://auth.asf.alaska.edu/login&app_type=401'
@@ -30,6 +26,11 @@ def get_hyp3_api_session(username, password) -> requests.Session:
     response = session.get(url, auth=(username, password))
     response.raise_for_status()
     return session
+
+
+def disable_subscription(session: requests.Session, hyp3_url: str, subscription_id: str) -> None:
+    # TODO
+    pass
 
 
 def get_existing_subscriptions(session: requests.Session, hyp3_url: str) -> dict:
@@ -40,16 +41,15 @@ def get_existing_subscriptions(session: requests.Session, hyp3_url: str) -> dict
     return response.json()
 
 
-def get_hazard_uuids_from_subscriptions(subscriptions: dict) -> frozenset[str]:
+def map_hazard_uuids_to_subscription_ids(subscriptions: dict) -> dict[str, str]:
     subscriptions_list = subscriptions['subscriptions']
-    uuids = frozenset(
-        hazard_uuid_from_subscription_name(sub['job_specification']['name']) for sub in subscriptions_list
-    )
-
-    if len(uuids) != len(subscriptions_list):
+    result = {
+        hazard_uuid_from_subscription_name(sub['job_specification']['name']): sub['subscription_id']
+        for sub in subscriptions_list
+    }
+    if len(result) != len(subscriptions_list):
         raise ValueError('Subscriptions list contains repeated job names')
-
-    return uuids
+    return result
 
 
 def submit_subscription(session: requests.Session, hyp3_url: str, subscription: dict, validate_only=False) -> dict:
@@ -141,6 +141,7 @@ def get_env_var(name: str) -> str:
     return val
 
 
+# TODO test(s)
 def lambda_handler(event, context) -> None:
     pdc_api_url = PDC_URL_TEST
     hyp3_url = HYP3_URL_TEST
@@ -156,6 +157,10 @@ def lambda_handler(event, context) -> None:
 
     hazards = filter_hazards(hazards)
     print(f'Filtered hazards: {len(hazards)}')
+
+    existing_subscriptions = get_existing_subscriptions(session, hyp3_url)
+    hazard_uuids_to_subscription_ids = map_hazard_uuids_to_subscription_ids(existing_subscriptions)
+    # TODO create new subs and disable ones for inactive hazards
 
     today = datetime.utcnow().date()
     subscriptions = [get_hyp3_subscription(hazard, today) for hazard in hazards]

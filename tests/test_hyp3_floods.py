@@ -5,39 +5,33 @@ import pytest
 import hyp3_floods
 
 
-def test_get_hazard_uuids():
-    hazards = [
-        {'uuid': 1},
-        {'uuid': 2},
-        {'uuid': 3},
-    ]
-    uuids = frozenset([1, 2, 3])
-    assert hyp3_floods.get_hazard_uuids(hazards) == uuids
-
-
-def test_get_hazard_uuids_from_subscriptions():
+def test_map_hazard_uuids_to_subscription_ids():
     subscriptions = {
         'subscriptions': [
-            {'job_specification': {'name': 'PDC-hazard-111'}},
-            {'job_specification': {'name': 'PDC-hazard-222'}},
-            {'job_specification': {'name': 'PDC-hazard-333'}},
+            {'subscription_id': 'aaa', 'job_specification': {'name': 'PDC-hazard-111'}},
+            {'subscription_id': 'bbb', 'job_specification': {'name': 'PDC-hazard-222'}},
+            {'subscription_id': 'ccc', 'job_specification': {'name': 'PDC-hazard-333'}},
         ]
     }
-    uuids = frozenset(['111', '222', '333'])
-    assert hyp3_floods.get_hazard_uuids_from_subscriptions(subscriptions) == uuids
+    result = {
+        '111': 'aaa',
+        '222': 'bbb',
+        '333': 'ccc',
+    }
+    assert hyp3_floods.map_hazard_uuids_to_subscription_ids(subscriptions) == result
 
 
-def test_get_hazard_uuids_from_subscriptions_with_duplicates():
+def test_map_hazard_uuids_to_subscription_ids_with_duplicates():
     subscriptions = {
         'subscriptions': [
-            {'job_specification': {'name': 'PDC-hazard-111'}},
-            {'job_specification': {'name': 'PDC-hazard-222'}},
-            {'job_specification': {'name': 'PDC-hazard-333'}},
-            {'job_specification': {'name': 'PDC-hazard-222'}},
+            {'subscription_id': 'aaa', 'job_specification': {'name': 'PDC-hazard-111'}},
+            {'subscription_id': 'bbb', 'job_specification': {'name': 'PDC-hazard-222'}},
+            {'subscription_id': 'ccc', 'job_specification': {'name': 'PDC-hazard-333'}},
+            {'subscription_id': 'ddd', 'job_specification': {'name': 'PDC-hazard-222'}},
         ]
     }
     with pytest.raises(ValueError):
-        hyp3_floods.get_hazard_uuids_from_subscriptions(subscriptions)
+        hyp3_floods.map_hazard_uuids_to_subscription_ids(subscriptions)
 
 
 def test_filter_hazards():
