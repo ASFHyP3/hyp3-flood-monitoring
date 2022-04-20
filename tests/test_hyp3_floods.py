@@ -5,6 +5,31 @@ import pytest
 import hyp3_floods
 
 
+def test_get_new_and_inactive_hazards():
+    active_hazards = [
+        {'uuid': 'new1'},
+        {'uuid': 'existing1'},
+        {'uuid': 'new2'},
+        {'uuid': 'existing2'},
+    ]
+    enabled_subscriptions = {
+        'subscriptions': [
+            {'subscription_id': 'sub1', 'job_specification': {'name': 'PDC-hazard-old1'}},
+            {'subscription_id': 'sub2', 'job_specification': {'name': 'PDC-hazard-existing1'}},
+            {'subscription_id': 'sub3', 'job_specification': {'name': 'PDC-hazard-old2'}},
+            {'subscription_id': 'sub4', 'job_specification': {'name': 'PDC-hazard-existing2'}},
+        ]
+    }
+    new_active_hazards = [
+        {'uuid': 'new1'},
+        {'uuid': 'new2'},
+    ]
+    inactive_hazard_subscription_ids = ['sub1', 'sub3']
+
+    assert hyp3_floods.get_new_and_inactive_hazards(active_hazards, enabled_subscriptions) \
+           == (new_active_hazards, inactive_hazard_subscription_ids)
+
+
 def test_map_hazard_uuids_to_subscription_ids():
     subscriptions = {
         'subscriptions': [

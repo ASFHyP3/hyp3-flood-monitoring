@@ -159,11 +159,34 @@ def lambda_handler(event, context) -> None:
     print(f'Filtered hazards: {len(active_hazards)}')
 
     enabled_subscriptions = get_existing_subscriptions(session, hyp3_url)
-    hazard_uuids_to_subscription_ids = map_hazard_uuids_to_subscription_ids(enabled_subscriptions)
-    # TODO create new subs and disable ones for inactive hazards
+
+    new_active_hazards, inactive_hazard_subscription_ids = \
+        get_new_and_inactive_hazards(active_hazards, enabled_subscriptions)
 
     today = datetime.utcnow().date()
-    subscriptions = [get_hyp3_subscription(hazard, today) for hazard in active_hazards]
+    subscriptions = [get_hyp3_subscription(hazard, today) for hazard in new_active_hazards]
     for subscription in subscriptions:
         # TODO remove validate_only
         submit_subscription(session, hyp3_url, subscription, validate_only=True)
+
+    for subscription_id in inactive_hazard_subscription_ids:
+        disable_subscription(session, hyp3_url, subscription_id)
+
+
+# TODO move definition
+def get_new_and_inactive_hazards(
+        active_hazards: list[dict],
+        enabled_subscriptions: dict) -> tuple[list[dict], list[str]]:
+
+    hazard_uuids_to_subscription_ids = map_hazard_uuids_to_subscription_ids(enabled_subscriptions)
+    subscribed_hazard_uuids = hazard_uuids_to_subscription_ids.keys()
+
+    new_active_hazards = [hazard for hazard in active_hazards if hazard['uuid'] not in subscribed_hazard_uuids]
+
+    active_hazard_uuids = frozenset(hazard['uuid'] for hazard in active_hazards)
+    inactive_hazard_subscription_ids = [
+        hazard_uuids_to_subscription_ids[uuid] for uuid in subscribed_hazard_uuids
+        if uuid not in active_hazard_uuids
+    ]
+
+    return new_active_hazards, inactive_hazard_subscription_ids
