@@ -28,9 +28,11 @@ def get_hyp3_api_session(username, password) -> requests.Session:
     return session
 
 
-def disable_subscription(session: requests.Session, hyp3_url: str, subscription_id: str) -> None:
-    # TODO
-    pass
+def disable_subscription(session: requests.Session, hyp3_url: str, subscription_id: str) -> dict:
+    url = f'{hyp3_url}/subscriptions/{subscription_id}'
+    response = session.patch(url, json={'enabled': False})
+    response.raise_for_status()
+    return response.json()
 
 
 def get_existing_subscriptions(session: requests.Session, hyp3_url: str) -> dict:
