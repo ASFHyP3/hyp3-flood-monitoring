@@ -182,7 +182,6 @@ def get_today() -> date:
     return datetime.utcnow().date()
 
 
-# TODO test(s)
 def lambda_handler(event, context) -> None:
     pdc_api_url = PDC_URL_TEST
     hyp3_url = HYP3_URL_TEST
