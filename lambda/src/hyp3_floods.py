@@ -208,6 +208,9 @@ def lambda_handler(event, context) -> None:
     new_active_hazards, inactive_hazard_subscription_ids = \
         get_new_and_inactive_hazards(active_hazards, enabled_subscriptions)
 
+    # TODO check each existing subscription (except the ones for inactive hazards) and for any that will expire
+    #  soon, update their end datetime (see get_end_datetime_str)
+
     today = get_today()
     new_subscriptions = [get_hyp3_subscription(hazard, today) for hazard in new_active_hazards]
     submit_subscriptions(session, hyp3_url, new_subscriptions)
