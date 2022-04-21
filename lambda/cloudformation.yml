@@ -12,6 +12,7 @@ Parameters:
     Type: String
     NoEcho: true
 
+# TODO: Add scheduled trigger for lambda
 Resources:
   Role:
     Type: AWS::IAM::Role
