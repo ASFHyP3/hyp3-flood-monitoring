@@ -136,6 +136,12 @@ def test_lambda_handler(
     )
 
 
+@patch.dict(os.environ, {}, clear=True)
+def test_lambda_handler_missing_env_var():
+    with pytest.raises(hyp3_floods.MissingEnvVarError):
+        hyp3_floods.lambda_handler(None, None)
+
+
 @patch('hyp3_floods.get_enabled_subscriptions')
 @patch('hyp3_floods.get_active_hazards')
 @patch('hyp3_floods.get_hyp3_api_session', MagicMock())

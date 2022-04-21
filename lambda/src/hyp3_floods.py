@@ -12,6 +12,10 @@ HYP3_URL_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 HYP3_URL_PROD = 'https://hyp3-api.asf.alaska.edu'
 
 
+class MissingEnvVarError(Exception):
+    pass
+
+
 class DuplicateSubscriptionNamesError(Exception):
     pass
 
@@ -174,7 +178,8 @@ def get_hyp3_subscription(hazard: dict, today: date, start_delta=timedelta(days=
 
 def get_env_var(name: str) -> str:
     val = os.getenv(name)
-    assert val, f'Expected env var {name}'  # TODO raise appropriate exception
+    if not val:
+        raise MissingEnvVarError(name)
     return val
 
 
