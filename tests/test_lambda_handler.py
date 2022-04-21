@@ -2,9 +2,18 @@ import os
 from datetime import date
 from unittest.mock import patch, MagicMock
 
+import pytest
+
 import hyp3_floods
 
 # TODO consider adding more test cases: no active hazards, no enabled subscriptions, no new active hazards, etc.
+
+
+MOCK_ENV = {
+    'PDC_HAZARDS_AUTH_TOKEN': 'test-token',
+    'EARTHDATA_USERNAME': 'test-user',
+    'EARTHDATA_PASSWORD': 'test-pass'
+}
 
 
 def get_test_subscription(start: str, end: str, aoi: str, name: str) -> dict:
@@ -42,11 +51,7 @@ def get_test_subscription(start: str, end: str, aoi: str, name: str) -> dict:
 @patch('hyp3_floods.get_enabled_subscriptions')
 @patch('hyp3_floods.get_active_hazards')
 @patch('hyp3_floods.get_hyp3_api_session')
-@patch.dict(
-    os.environ,
-    {'PDC_HAZARDS_AUTH_TOKEN': 'test-token', 'EARTHDATA_USERNAME': 'test-user', 'EARTHDATA_PASSWORD': 'test-pass'},
-    clear=True
-)
+@patch.dict(os.environ, MOCK_ENV, clear=True)
 def test_lambda_handler(
         mock_get_hyp3_api_session: MagicMock,
         mock_get_active_hazards: MagicMock,
@@ -131,6 +136,22 @@ def test_lambda_handler(
     )
 
 
-def test_lambda_handler_duplicate_job_names():
-    # TODO
-    pass
+@patch('hyp3_floods.get_enabled_subscriptions')
+@patch('hyp3_floods.get_active_hazards')
+@patch('hyp3_floods.get_hyp3_api_session', MagicMock())
+@patch.dict(os.environ, MOCK_ENV, clear=True)
+def test_lambda_handler_duplicate_job_names(
+        mock_get_active_hazards: MagicMock,
+        mock_get_enabled_subscriptions: MagicMock):
+
+    mock_get_active_hazards.return_value = []
+    mock_get_enabled_subscriptions.return_value = {
+        'subscriptions': [
+            {'subscription_id': 'aaa', 'job_specification': {'name': 'PDC-hazard-111'}},
+            {'subscription_id': 'bbb', 'job_specification': {'name': 'PDC-hazard-222'}},
+            {'subscription_id': 'ccc', 'job_specification': {'name': 'PDC-hazard-333'}},
+            {'subscription_id': 'ddd', 'job_specification': {'name': 'PDC-hazard-222'}},
+        ]
+    }
+    with pytest.raises(hyp3_floods.DuplicateSubscriptionNamesError):
+        hyp3_floods.lambda_handler(None, None)
