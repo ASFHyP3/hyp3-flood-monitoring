@@ -55,7 +55,7 @@ def test_map_hazard_uuids_to_subscription_ids_with_duplicates():
             {'subscription_id': 'ddd', 'job_specification': {'name': 'PDC-hazard-222'}},
         ]
     }
-    with pytest.raises(ValueError):
+    with pytest.raises(hyp3_floods.DuplicateSubscriptionNamesError):
         hyp3_floods.map_hazard_uuids_to_subscription_ids(subscriptions)
 
 

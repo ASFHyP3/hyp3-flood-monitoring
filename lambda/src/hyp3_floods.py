@@ -12,6 +12,10 @@ HYP3_URL_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 HYP3_URL_PROD = 'https://hyp3-api.asf.alaska.edu'
 
 
+class DuplicateSubscriptionNamesError(Exception):
+    pass
+
+
 def get_active_hazards(pdc_api_url: str, auth_token: str) -> list[dict]:
     url = f'{pdc_api_url}/hp_srv/services/hazards/t/json/get_active_hazards'
     response = requests.get(url, headers={'Authorization': f'Bearer {auth_token}'})
@@ -85,7 +89,11 @@ def map_hazard_uuids_to_subscription_ids(subscriptions: dict) -> dict[str, str]:
         for sub in subscriptions_list
     }
     if len(result) != len(subscriptions_list):
-        raise ValueError('Subscriptions list contains repeated job names')
+        raise DuplicateSubscriptionNamesError(
+            'Subscriptions list contains repeated job names. '
+            'Each name should be unique and correspond to a hazard UUID. '
+            'This error should never occur and indicates that something is broken.'
+        )
     return result
 
 
