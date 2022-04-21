@@ -170,6 +170,10 @@ def get_env_var(name: str) -> str:
     return val
 
 
+def get_today() -> date:
+    return datetime.utcnow().date()
+
+
 # TODO test(s)
 def lambda_handler(event, context) -> None:
     pdc_api_url = PDC_URL_TEST
@@ -192,7 +196,7 @@ def lambda_handler(event, context) -> None:
     new_active_hazards, inactive_hazard_subscription_ids = \
         get_new_and_inactive_hazards(active_hazards, enabled_subscriptions)
 
-    today = datetime.utcnow().date()
+    today = get_today()
     new_subscriptions = [get_hyp3_subscription(hazard, today) for hazard in new_active_hazards]
     submit_subscriptions(session, hyp3_url, new_subscriptions)
 
