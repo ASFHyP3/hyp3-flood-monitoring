@@ -233,3 +233,17 @@ def lambda_handler(event, context) -> None:
     submit_subscriptions(session, hyp3_url, new_subscriptions)
 
     disable_subscriptions(session, hyp3_url, inactive_hazard_subscription_ids)
+
+    print('\nStart and end datetimes for new active hazards:')
+    print(
+        "(End datetimes are not currently used for creating subscriptions, "
+        "but we're logging them here for future reference.)"
+    )
+    for hazard in new_active_hazards:
+        start = datetime_from_timestamp_in_seconds(int(hazard['start_Date']) // 1000)
+        end = datetime_from_timestamp_in_seconds(int(hazard['end_Date']) // 1000)
+        delta = end - start
+        print(f"\nHazard: {hazard['uuid']}")
+        print(f"Start: {start.isoformat()}")
+        print(f"End: {end.isoformat()}")
+        print(f"Delta: {delta}")
