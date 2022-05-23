@@ -63,15 +63,25 @@ def submit_subscriptions(session: requests.Session, hyp3_url: str, subscriptions
         name = subscription['subscription']['job_specification']['name']
         print(f"({count}/{len(subscriptions)}) Submitting subscription: {name}")
 
-        response = submit_subscription(session, hyp3_url, subscription)
+        try:
+            response = submit_subscription(session, hyp3_url, subscription)
+            print(f"Got subscription ID: {response['subscription']['subscription_id']}")
+        except requests.HTTPError as e:
+            print('Failed to submit subscription:')
+            print(e)
 
-        print(f"Got subscription ID: {response['subscription']['subscription_id']}\n")
+        print()
 
 
 def disable_subscriptions(session: requests.Session, hyp3_url: str, subscription_ids: list[str]) -> None:
     for count, subscription_id in enumerate(subscription_ids, start=1):
         print(f"({count}/{len(subscription_ids)}) Disabling subscription with ID: {subscription_id}")
-        disable_subscription(session, hyp3_url, subscription_id)
+
+        try:
+            disable_subscription(session, hyp3_url, subscription_id)
+        except requests.HTTPError as e:
+            print('Failed to disable subscription:')
+            print(e)
 
 
 def get_new_and_inactive_hazards(
