@@ -59,12 +59,18 @@ def disable_subscription(session: requests.Session, hyp3_url: str, subscription_
 
 
 def submit_subscriptions(session: requests.Session, hyp3_url: str, subscriptions: list[dict]) -> None:
-    for subscription in subscriptions:
-        submit_subscription(session, hyp3_url, subscription)
+    for count, subscription in enumerate(subscriptions, start=1):
+        name = subscription['subscription']['job_specification']['name']
+        print(f"({count}/{len(subscriptions)}) Submitting subscription: {name}")
+
+        response = submit_subscription(session, hyp3_url, subscription)
+
+        print(f"Got subscription ID: {response['subscription']['subscription_id']}\n")
 
 
 def disable_subscriptions(session: requests.Session, hyp3_url: str, subscription_ids: list[str]) -> None:
-    for subscription_id in subscription_ids:
+    for count, subscription_id in enumerate(subscription_ids, start=1):
+        print(f"({count}/{len(subscription_ids)}) Disabling subscription with ID: {subscription_id}")
         disable_subscription(session, hyp3_url, subscription_id)
 
 
@@ -191,22 +197,33 @@ def lambda_handler(event, context) -> None:
     pdc_api_url = PDC_URL_TEST
     hyp3_url = HYP3_URL_TEST
 
+    print(f"PDC API URL: {pdc_api_url}")
+    print(f"HyP3 API URL: {hyp3_url}")
+
     auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN')
     earthdata_username = get_env_var('EARTHDATA_USERNAME')
     earthdata_password = get_env_var('EARTHDATA_PASSWORD')
 
+    print(f"Earthdata user: {earthdata_username}\n")
+
     session = get_hyp3_api_session(earthdata_username, earthdata_password)
 
+    print('Fetching active hazards')
     active_hazards = get_active_hazards(pdc_api_url, auth_token)
-    print(f'Hazards: {len(active_hazards)}')
+    print(f"Active hazards (before filtering): {len(active_hazards)}")
 
     active_hazards = filter_hazards(active_hazards)
-    print(f'Filtered hazards: {len(active_hazards)}')
+    print(f"Active hazards (after filtering): {len(active_hazards)}\n")
 
+    print('Fetching enabled subscriptions')
     enabled_subscriptions = get_enabled_subscriptions(session, hyp3_url)
+    print(f"Enabled subscriptions: {len(enabled_subscriptions['subscriptions'])}\n")
 
     new_active_hazards, inactive_hazard_subscription_ids = \
         get_new_and_inactive_hazards(active_hazards, enabled_subscriptions)
+
+    print(f"New active hazards: {len(new_active_hazards)}")
+    print(f"Inactive hazards: {len(inactive_hazard_subscription_ids)}\n")
 
     # TODO check each existing subscription (except the ones for inactive hazards) and for any that will expire
     #  soon, update their end datetime (see get_end_datetime_str)
