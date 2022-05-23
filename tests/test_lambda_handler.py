@@ -45,6 +45,7 @@ def get_test_subscription(start: str, end: str, aoi: str, name: str) -> dict:
     }
 
 
+@patch('hyp3_floods.log_hazard_datetimes')
 @patch('hyp3_floods.disable_subscriptions')
 @patch('hyp3_floods.get_today')
 @patch('hyp3_floods.submit_subscriptions')
@@ -58,7 +59,8 @@ def test_lambda_handler(
         mock_get_enabled_subscriptions: MagicMock,
         mock_submit_subscriptions: MagicMock,
         mock_get_today: MagicMock,
-        mock_disable_subscriptions: MagicMock):
+        mock_disable_subscriptions: MagicMock,
+        mock_log_hazard_datetimes: MagicMock):
 
     mock_hyp3_api_session = mock_get_hyp3_api_session.return_value = 'mock hyp3 api session'
     mock_get_today.return_value = date(year=2022, month=4, day=18)
@@ -95,6 +97,7 @@ def test_lambda_handler(
          'latitude': 38.72,
          'longitude': -1.96},
     ]
+    new_active_hazards = [mock_get_active_hazards.return_value[0], mock_get_active_hazards.return_value[3]]
 
     mock_get_enabled_subscriptions.return_value = {
         'subscriptions': [
@@ -134,6 +137,8 @@ def test_lambda_handler(
         hyp3_floods.HYP3_URL_TEST,
         inactive_hazard_subscription_ids
     )
+
+    mock_log_hazard_datetimes.assert_called_once_with(new_active_hazards)
 
 
 @patch.dict(os.environ, {}, clear=True)
