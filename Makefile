@@ -4,7 +4,7 @@ install:
 	python -m pip install -r requirements.txt
 
 install-lambda-deps:
-	python -m pip install -r lambda/requirements.txt
+	python -m pip install -r lambda/requirements.txt -t lambda/src/
 
 lambda_env ?= env/dev.env
 run:
