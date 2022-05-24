@@ -9,7 +9,7 @@ PDC_URL_PROD = 'https://sentry.pdc.org'
 
 # TODO make url configurable
 HYP3_URL_TEST = 'https://hyp3-test-api.asf.alaska.edu'
-HYP3_URL_PROD = 'https://hyp3-api.asf.alaska.edu'
+HYP3_URL_PROD = 'https://hyp3-watermap.asf.alaska.edu'
 
 
 class MissingEnvVarError(Exception):
