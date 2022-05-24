@@ -51,7 +51,7 @@ Resources:
           EARTHDATA_USERNAME: !Ref EarthdataUsername
           EARTHDATA_PASSWORD: !Ref EarthdataPassword
       Code: src/
-      Handler: main.lambda_handler
+      Handler: hyp3_floods.lambda_handler
       MemorySize: 128
       Role: !GetAtt Role.Arn
       Runtime: python3.9
