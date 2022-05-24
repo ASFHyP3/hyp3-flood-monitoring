@@ -1,6 +1,25 @@
 AWSTemplateFormatVersion: 2010-09-09
 
+Parameters:
+  PDCHazardsAuthToken:
+    Type: String
+    NoEcho: true
+
+  EarthdataUsername:
+    Type: String
+
+  EarthdataPassword:
+    Type: String
+    NoEcho: true
+
+# TODO: Add scheduled trigger for lambda
 Resources:
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Lambda}"
+      RetentionInDays: 731
+
   Role:
     Type: AWS::IAM::Role
     Properties:
@@ -11,10 +30,26 @@ Resources:
           Principal:
             Service: lambda.amazonaws.com
           Effect: Allow
+      Policies:
+        - PolicyName: policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+
 
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
+      Environment:
+        Variables:
+          PDC_HAZARDS_AUTH_TOKEN: !Ref PDCHazardsAuthToken
+          EARTHDATA_USERNAME: !Ref EarthdataUsername
+          EARTHDATA_PASSWORD: !Ref EarthdataPassword
       Code: src/
       Handler: main.lambda_handler
       MemorySize: 128

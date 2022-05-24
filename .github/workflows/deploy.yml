@@ -10,6 +10,9 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   CLOUDFORMATION_ROLE_ARN: ${{ secrets.CLOUDFORMATION_ROLE_ARN }}
+  PDC_HAZARDS_AUTH_TOKEN: ${{ secrets.PDC_HAZARDS_AUTH_TOKEN }}
+  EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+  EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
 
 jobs:
   deploy:
@@ -25,8 +28,7 @@ jobs:
         with:
           python-version: 3.9
       - name: Install
-        # TODO
-        run: echo 'TODO install'
+        run: make install-lambda-deps
       - name: Package and deploy
         run: |
           aws cloudformation package \
@@ -37,4 +39,8 @@ jobs:
             --template-file packaged.yml \
             --stack-name hyp3-flood-monitoring-test \
             --capabilities CAPABILITY_IAM \
-            --role-arn ${CLOUDFORMATION_ROLE_ARN}
+            --role-arn ${CLOUDFORMATION_ROLE_ARN} \
+            --parameter-overrides \
+              PDCHazardsAuthToken=${PDC_HAZARDS_AUTH_TOKEN}
+              EarthdataUsername=${EARTHDATA_USERNAME}
+              EarthdataPassword=${EARTHDATA_PASSWORD}

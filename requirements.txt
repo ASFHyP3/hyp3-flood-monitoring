@@ -1,1 +1,4 @@
+-r lambda/requirements.txt
 cfn-lint
+flake8
+pytest
