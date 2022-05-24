@@ -41,6 +41,6 @@ jobs:
             --capabilities CAPABILITY_IAM \
             --role-arn ${CLOUDFORMATION_ROLE_ARN} \
             --parameter-overrides \
-              PDCHazardsAuthToken=${PDC_HAZARDS_AUTH_TOKEN}
-              EarthdataUsername=${EARTHDATA_USERNAME}
+              PDCHazardsAuthToken=${PDC_HAZARDS_AUTH_TOKEN} \
+              EarthdataUsername=${EARTHDATA_USERNAME} \
               EarthdataPassword=${EARTHDATA_PASSWORD}
