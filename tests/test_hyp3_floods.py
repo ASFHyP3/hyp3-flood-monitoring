@@ -82,36 +82,30 @@ def test_get_aoi():
     assert hyp3_floods.get_aoi(hazard) == aoi
 
 
-def test_datetime_from_timestamp_in_seconds():
-    timestamp = 1639170543
-    date_time = datetime(year=2021, month=12, day=10, hour=21, minute=9, second=3, tzinfo=timezone.utc)
-    assert hyp3_floods.datetime_from_timestamp_in_seconds(timestamp) == date_time
-
-
 def test_str_from_datetime():
     date_time = datetime(year=2021, month=12, day=10, hour=21, minute=9, second=3, tzinfo=timezone.utc)
     datetime_str = '2021-12-10T21:09:03Z'
     assert hyp3_floods.str_from_datetime(date_time) == datetime_str
 
 
-def test_start_datetime_str_from_timestamp_in_ms():
+def test_get_start_datetime_str():
     timestamp = 1639170543000
 
     datetime_str = '2021-12-10T21:09:03Z'
-    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(0)) == datetime_str
+    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(0)) == datetime_str
 
     datetime_str_with_delta = '2021-12-09T21:09:03Z'
-    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(1)) == datetime_str_with_delta
+    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(days=1)) == datetime_str_with_delta
 
 
-def test_start_datetime_str_from_timestamp_in_ms_truncate():
+def test_get_start_datetime_str_truncate():
     timestamp = 1639170543789
 
     datetime_str = '2021-12-10T21:09:03Z'
-    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(0)) == datetime_str
+    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(0)) == datetime_str
 
     datetime_str_with_delta = '2021-12-09T21:09:03Z'
-    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(1)) == datetime_str_with_delta
+    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(days=1)) == datetime_str_with_delta
 
 
 def test_get_end_datetime_str():
