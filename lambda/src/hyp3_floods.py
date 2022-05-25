@@ -125,10 +125,6 @@ def get_aoi(hazard: dict) -> str:
     return f"POINT({hazard['longitude']} {hazard['latitude']})"
 
 
-def datetime_from_timestamp_in_seconds(timestamp_in_seconds: int) -> datetime:
-    return datetime.fromtimestamp(timestamp_in_seconds, tz=timezone.utc)
-
-
 def str_from_datetime(date_time: datetime) -> str:
     assert date_time.tzinfo == timezone.utc
     datetime_str = date_time.isoformat()
@@ -137,7 +133,7 @@ def str_from_datetime(date_time: datetime) -> str:
 
 
 def start_datetime_str_from_timestamp_in_ms(timestamp_in_ms: int, delta: timedelta) -> str:
-    return str_from_datetime(datetime_from_timestamp_in_seconds(timestamp_in_ms // 1000) - delta)
+    return str_from_datetime(datetime.fromtimestamp(timestamp_in_ms // 1000, tz=timezone.utc) - delta)
 
 
 def get_end_datetime_str(today: date) -> str:

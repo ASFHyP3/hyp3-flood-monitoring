@@ -82,12 +82,6 @@ def test_get_aoi():
     assert hyp3_floods.get_aoi(hazard) == aoi
 
 
-def test_datetime_from_timestamp_in_seconds():
-    timestamp = 1639170543
-    date_time = datetime(year=2021, month=12, day=10, hour=21, minute=9, second=3, tzinfo=timezone.utc)
-    assert hyp3_floods.datetime_from_timestamp_in_seconds(timestamp) == date_time
-
-
 def test_str_from_datetime():
     date_time = datetime(year=2021, month=12, day=10, hour=21, minute=9, second=3, tzinfo=timezone.utc)
     datetime_str = '2021-12-10T21:09:03Z'
