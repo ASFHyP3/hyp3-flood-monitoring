@@ -101,7 +101,7 @@ def test_start_datetime_str_from_timestamp_in_ms():
     assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(0)) == datetime_str
 
     datetime_str_with_delta = '2021-12-09T21:09:03Z'
-    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(1)) == datetime_str_with_delta
+    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(days=1)) == datetime_str_with_delta
 
 
 def test_start_datetime_str_from_timestamp_in_ms_truncate():
@@ -111,7 +111,7 @@ def test_start_datetime_str_from_timestamp_in_ms_truncate():
     assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(0)) == datetime_str
 
     datetime_str_with_delta = '2021-12-09T21:09:03Z'
-    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(1)) == datetime_str_with_delta
+    assert hyp3_floods.start_datetime_str_from_timestamp_in_ms(timestamp, timedelta(days=1)) == datetime_str_with_delta
 
 
 def test_get_end_datetime_str():
