@@ -132,7 +132,7 @@ def str_from_datetime(date_time: datetime) -> str:
     return datetime_str.removesuffix('+00:00') + 'Z'
 
 
-def start_datetime_str_from_timestamp_in_ms(timestamp_in_ms: int, delta: timedelta) -> str:
+def get_start_datetime_str(timestamp_in_ms: int, delta: timedelta) -> str:
     return str_from_datetime(datetime.fromtimestamp(timestamp_in_ms // 1000, tz=timezone.utc) - delta)
 
 
@@ -154,7 +154,7 @@ def hazard_uuid_from_subscription_name(name: str) -> str:
 
 def get_hyp3_subscription(hazard: dict, today: date, start_delta=timedelta(days=1)) -> dict:
     # TODO decide on appropriate default value for start_delta
-    start = start_datetime_str_from_timestamp_in_ms(int(hazard['start_Date']), start_delta)
+    start = get_start_datetime_str(int(hazard['start_Date']), start_delta)
     end = get_end_datetime_str(today)
     aoi = get_aoi(hazard)
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
