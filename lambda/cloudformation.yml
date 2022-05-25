@@ -56,3 +56,10 @@ Resources:
       Role: !GetAtt Role.Arn
       Runtime: python3.9
       Timeout: 900
+
+  EventInvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref Lambda
+      Qualifier: $LATEST
+      MaximumRetryAttempts: 0
