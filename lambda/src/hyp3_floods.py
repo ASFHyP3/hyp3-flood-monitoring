@@ -3,9 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 
 import requests
 
-# TODO make url configurable
-PDC_URL_TEST = 'https://testsentry.pdc.org'
-PDC_URL_PROD = 'https://sentry.pdc.org'
+PDC_URL = 'https://sentry.pdc.org'
 
 # TODO make url configurable
 HYP3_URL_TEST = 'https://hyp3-test-api.asf.alaska.edu'
@@ -20,8 +18,8 @@ class DuplicateSubscriptionNamesError(Exception):
     pass
 
 
-def get_active_hazards(pdc_api_url: str, auth_token: str) -> list[dict]:
-    url = f'{pdc_api_url}/hp_srv/services/hazards/t/json/get_active_hazards'
+def get_active_hazards(auth_token: str) -> list[dict]:
+    url = f'{PDC_URL}/hp_srv/services/hazards/t/json/get_active_hazards'
     response = requests.get(url, headers={'Authorization': f'Bearer {auth_token}'})
     response.raise_for_status()
     return response.json()
@@ -204,10 +202,9 @@ def get_today() -> date:
 
 
 def lambda_handler(event, context) -> None:
-    pdc_api_url = PDC_URL_TEST
     hyp3_url = HYP3_URL_TEST
 
-    print(f"PDC API URL: {pdc_api_url}")
+    print(f"PDC API URL: {PDC_URL}")
     print(f"HyP3 API URL: {hyp3_url}")
 
     auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN')
@@ -219,7 +216,7 @@ def lambda_handler(event, context) -> None:
     session = get_hyp3_api_session(earthdata_username, earthdata_password)
 
     print('Fetching active hazards')
-    active_hazards = get_active_hazards(pdc_api_url, auth_token)
+    active_hazards = get_active_hazards(auth_token)
     print(f"Active hazards (before filtering): {len(active_hazards)}")
 
     active_hazards = filter_hazards(active_hazards)
