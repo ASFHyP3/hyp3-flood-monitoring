@@ -70,7 +70,7 @@ def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional
     response = hyp3.get_subscriptions_by_name(name)
     subscriptions = response['subscriptions']
     if len(subscriptions) > 1:
-        raise DuplicateSubscriptionNames(f"Got {len(subscriptions)} with name {name} (expected 0 or 1)")
+        raise DuplicateSubscriptionNames(f"Got {len(subscriptions)} subscriptions with name {name} (expected 0 or 1)")
     return subscriptions[0] if subscriptions else None
 
 

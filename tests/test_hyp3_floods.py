@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import NonCallableMock
 
+import pytest
+
 import hyp3_floods
 
 
@@ -81,6 +83,21 @@ def test_process_active_hazard_update():
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
     mock_hyp3.update_subscription.assert_called_once_with('789', '2022-05-27T23:14:34Z')
+
+
+def test_process_active_hazard_duplicate_subscription_names():
+    mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
+    mock_hyp3.get_subscriptions_by_name.return_value = {
+        'subscriptions': [{'subscription_id': 'foo'}, {'subscription_id': 'bar'}]
+    }
+
+    hazard = {'uuid': '123'}
+    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
+
+    with pytest.raises(hyp3_floods.DuplicateSubscriptionNames):
+        hyp3_floods.process_active_hazard(mock_hyp3, hazard, now)
+
+    mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
 
 def test_filter_hazards():
