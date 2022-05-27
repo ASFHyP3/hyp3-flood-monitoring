@@ -1,6 +1,86 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
+from unittest.mock import NonCallableMock
 
 import hyp3_floods
+
+
+def get_test_subscription(start: str, end: str, aoi: str, name: str) -> dict:
+    return {
+        'search_parameters': {
+            'platform': 'S1',
+            'processingLevel': 'SLC',
+            'beamMode': ['IW'],
+            'polarization': ['VV+VH'],
+            'start': start,
+            'end': end,
+            'intersectsWith': aoi
+        },
+        'job_specification': {
+            'job_type': 'WATER_MAP',
+            'job_parameters': {
+                'resolution': 30,
+                'speckle_filter': True,
+                'max_vv_threshold': -15.5,
+                'max_vh_threshold': -23.0,
+                'hand_threshold': 15.0,
+                'hand_fraction': 0.8,
+                'membership_threshold': 0.45
+            },
+            'name': name
+        }
+    }
+
+
+def test_process_active_hazard_submit():
+    mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
+    mock_hyp3.get_subscriptions_by_name.return_value = {'subscriptions': []}
+    mock_hyp3.submit_subscription.return_value = {'subscription': {'subscription_id': ''}}
+
+    hazard = {
+        'uuid': '123',
+        'start_Date': '1650388111000',
+        'latitude': 38.39,
+        'longitude': 47.94
+    }
+    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
+
+    hyp3_floods.process_active_hazard(mock_hyp3, hazard, now)
+
+    name = 'PDC-hazard-123'
+    new_subscription = get_test_subscription(
+        name=name,
+        aoi='POINT(47.94 38.39)',
+        start='2022-04-18T17:08:31Z',
+        end='2022-05-27T23:14:34Z'
+    )
+
+    mock_hyp3.get_subscriptions_by_name.assert_called_once_with(name)
+    mock_hyp3.submit_subscription.assert_called_once_with(new_subscription)
+
+
+def test_process_active_hazard_update():
+    mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
+    mock_hyp3.get_subscriptions_by_name.return_value = {
+        'subscriptions': [
+            {
+                'subscription_id': '789',
+                'search_parameters': {'intersectsWith': 'POINT(47.94 38.39)'}
+            }
+        ]
+    }
+
+    hazard = {
+        'uuid': '123',
+        'start_Date': '1650388111000',
+        'latitude': 38.39,
+        'longitude': 47.94
+    }
+    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
+
+    hyp3_floods.process_active_hazard(mock_hyp3, hazard, now)
+
+    mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
+    mock_hyp3.update_subscription.assert_called_once_with('789', '2022-05-27T23:14:34Z')
 
 
 def test_filter_hazards():
