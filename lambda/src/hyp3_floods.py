@@ -47,12 +47,17 @@ def submit_subscription(session: requests.Session, hyp3_url: str, subscription: 
     return response.json()
 
 
-def get_existing_subscription(session: requests.Session, hyp3_url: str, name: str) -> Optional[dict]:
-    # TODO tests?
+def get_subscriptions_by_name(session: requests.Session, hyp3_url: str, name: str) -> dict:
     url = f'{hyp3_url}/subscriptions'
     response = session.get(url, params={'name': name})
     response.raise_for_status()
-    subscriptions = response.json()['subscriptions']
+    return response.json()
+
+
+def get_existing_subscription(session: requests.Session, hyp3_url: str, name: str) -> Optional[dict]:
+    # TODO tests?
+    response = get_subscriptions_by_name(session, hyp3_url, name)
+    subscriptions = response['subscriptions']
     if len(subscriptions) > 1:
         raise DuplicateSubscriptionNames(f"Got {len(subscriptions)} with name {name} (expected 0 or 1)")
     return subscriptions[0] if subscriptions else None
