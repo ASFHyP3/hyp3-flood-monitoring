@@ -66,7 +66,6 @@ def get_active_hazards(auth_token: str) -> list[dict]:
 
 
 def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional[dict]:
-    # TODO tests?
     response = hyp3.get_subscriptions_by_name(name)
     subscriptions = response['subscriptions']
     if len(subscriptions) > 1:
@@ -88,8 +87,6 @@ def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict
 
 
 def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, now: datetime) -> None:
-    # TODO tests?
-
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
     print(f"Fetching existing subscription with name: {name}")
     existing_subscription = get_existing_subscription(hyp3, name)
@@ -108,7 +105,6 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, now: datetim
 
 
 def compare_aoi(existing_subscription: dict, new_aoi: str) -> None:
-    # TODO tests?
     subscription_id = existing_subscription['subscription_id']
     existing_aoi = existing_subscription['search_parameters']['intersectsWith']
     if existing_aoi != new_aoi:
