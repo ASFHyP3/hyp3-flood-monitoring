@@ -100,6 +100,30 @@ def test_process_active_hazard_duplicate_subscription_names():
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
 
+def test_process_active_hazard_outdated_aoi():
+    mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
+    mock_hyp3.get_subscriptions_by_name.return_value = {
+        'subscriptions': [
+            {
+                'subscription_id': '789',
+                'search_parameters': {'intersectsWith': 'POINT(47.94 35.39)'}
+            }
+        ]
+    }
+
+    hazard = {
+        'uuid': '123',
+        'latitude': 38.39,
+        'longitude': 47.94
+    }
+    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
+
+    with pytest.raises(hyp3_floods.OutdatedAOI):
+        hyp3_floods.process_active_hazard(mock_hyp3, hazard, now)
+
+    mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
+
+
 def test_filter_hazards():
     hazards = [
         {'hazard_ID': 0, 'type_ID': 'FLOOD'},
