@@ -1,5 +1,6 @@
 import os
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 import requests
 
@@ -10,11 +11,15 @@ HYP3_URL_TEST = 'https://hyp3-test-api.asf.alaska.edu'
 HYP3_URL_PROD = 'https://hyp3-watermap.asf.alaska.edu'
 
 
-class MissingEnvVarError(Exception):
+class MissingEnvVar(Exception):
     pass
 
 
-class DuplicateSubscriptionNamesError(Exception):
+class DuplicateSubscriptionNames(Exception):
+    pass
+
+
+class OutdatedAOI(Exception):
     pass
 
 
@@ -34,85 +39,74 @@ def get_hyp3_api_session(username, password) -> requests.Session:
     return session
 
 
-def get_enabled_subscriptions(session: requests.Session, hyp3_url: str) -> dict:
-    url = f'{hyp3_url}/subscriptions'
-    response = session.get(url, params={'enabled': 'true'})
-    response.raise_for_status()
-    return response.json()
-
-
 def submit_subscription(session: requests.Session, hyp3_url: str, subscription: dict, validate_only=False) -> dict:
     url = f'{hyp3_url}/subscriptions'
-    subscription['validate_only'] = validate_only
-    response = session.post(url, json=subscription)
+    payload = {'subscription': subscription, 'validate_only': validate_only}
+    response = session.post(url, json=payload)
     response.raise_for_status()
     return response.json()
 
 
-def disable_subscription(session: requests.Session, hyp3_url: str, subscription_id: str) -> dict:
+def get_existing_subscription(session: requests.Session, hyp3_url: str, name: str) -> Optional[dict]:
+    # TODO tests?
+    url = f'{hyp3_url}/subscriptions'
+    response = session.get(url, params={'name': name})
+    response.raise_for_status()
+    subscriptions = response.json()['subscriptions']
+    if len(subscriptions) > 1:
+        raise DuplicateSubscriptionNames(f"Got {len(subscriptions)} with name {name} (expected 0 or 1)")
+    return subscriptions[0] if subscriptions else None
+
+
+def update_subscription(session: requests.Session, hyp3_url: str, subscription_id: str, end: str) -> dict:
     url = f'{hyp3_url}/subscriptions/{subscription_id}'
-    response = session.patch(url, json={'enabled': False})
+    response = session.patch(url, json={'enabled': True, 'end': end})
     response.raise_for_status()
     return response.json()
 
 
-def submit_subscriptions(session: requests.Session, hyp3_url: str, subscriptions: list[dict]) -> None:
-    for count, subscription in enumerate(subscriptions, start=1):
-        name = subscription['subscription']['job_specification']['name']
-        print(f"({count}/{len(subscriptions)}) Submitting subscription: {name}")
-
+def process_active_hazards(session: requests.Session, hyp3_url: str, active_hazards: list[dict], now: datetime) -> None:
+    # TODO tests?
+    for count, hazard in enumerate(active_hazards, start=1):
+        print(f"({count}/{len(active_hazards)}) Processing hazard {hazard['uuid']}")
         try:
-            response = submit_subscription(session, hyp3_url, subscription)
-            print(f"Got subscription ID: {response['subscription']['subscription_id']}")
-        except requests.HTTPError as e:
-            print('Failed to submit subscription:')
-            print(e)
-
-        print()
+            process_active_hazard(session, hyp3_url, hazard, now)
+        except (requests.HTTPError, DuplicateSubscriptionNames, OutdatedAOI) as e:
+            print(f"Error while processing hazard: {e}")
 
 
-def disable_subscriptions(session: requests.Session, hyp3_url: str, subscription_ids: list[str]) -> None:
-    for count, subscription_id in enumerate(subscription_ids, start=1):
-        print(f"({count}/{len(subscription_ids)}) Disabling subscription with ID: {subscription_id}")
-
-        try:
-            disable_subscription(session, hyp3_url, subscription_id)
-        except requests.HTTPError as e:
-            print('Failed to disable subscription:')
-            print(e)
+# TODO rename functions to make it clear what's fetching via network (see the get_ functions)
 
 
-def get_new_and_inactive_hazards(
-        active_hazards: list[dict],
-        enabled_subscriptions: dict) -> tuple[list[dict], list[str]]:
+def process_active_hazard(session: requests.Session, hyp3_url: str, hazard: dict, now: datetime) -> None:
+    # TODO tests?
 
-    hazard_uuids_to_subscription_ids = map_hazard_uuids_to_subscription_ids(enabled_subscriptions)
-    subscribed_hazard_uuids = hazard_uuids_to_subscription_ids.keys()
+    name = subscription_name_from_hazard_uuid(hazard['uuid'])
+    print(f"Fetching existing subscription with name: {name}")
+    existing_subscription = get_existing_subscription(session, hyp3_url, name)
 
-    new_active_hazards = [hazard for hazard in active_hazards if hazard['uuid'] not in subscribed_hazard_uuids]
+    if existing_subscription:
+        compare_aoi(existing_subscription, get_aoi(hazard))
+        subscription_id = existing_subscription['subscription_id']
+        print(f"Updating subscription with id: {subscription_id}")
+        update_subscription(session, hyp3_url, subscription_id, get_end_datetime_str(now))
+    else:
+        print('No existing subscription; submitting new subscription')
+        new_subscription = get_hyp3_subscription(hazard, now)
+        response = submit_subscription(session, hyp3_url, new_subscription)
+        subscription_id = response['subscription']['subscription_id']
+        print(f"Got subscription id: {subscription_id}")
 
-    active_hazard_uuids = frozenset(hazard['uuid'] for hazard in active_hazards)
-    inactive_hazard_subscription_ids = [
-        hazard_uuids_to_subscription_ids[uuid] for uuid in subscribed_hazard_uuids
-        if uuid not in active_hazard_uuids
-    ]
 
-    return new_active_hazards, inactive_hazard_subscription_ids
-
-
-def map_hazard_uuids_to_subscription_ids(subscriptions: dict) -> dict[str, str]:
-    subscriptions_list = subscriptions['subscriptions']
-    result = {
-        hazard_uuid_from_subscription_name(sub['job_specification']['name']): sub['subscription_id']
-        for sub in subscriptions_list
-    }
-    if len(result) != len(subscriptions_list):
-        raise DuplicateSubscriptionNamesError(
-            'Subscriptions list contains repeated job names. '
-            'Each name should be unique and correspond to a hazard UUID. '
-            'This error should never occur and indicates that something is broken.'
+def compare_aoi(existing_subscription: dict, new_aoi: str) -> None:
+    # TODO tests?
+    subscription_id = existing_subscription['subscription_id']
+    existing_aoi = existing_subscription['search_parameters']['intersectsWith']
+    if existing_aoi != new_aoi:
+        raise OutdatedAOI(
+            f"Subscription with id {subscription_id} has AOI {existing_aoi} but the current AOI is {new_aoi}."
+            " This indicates that we need to implement a way to update subscription AOI."
         )
-    return result
 
 
 def filter_hazards(hazards: list[dict]) -> list[dict]:
@@ -136,9 +130,8 @@ def get_start_datetime_str(timestamp_in_ms: int, delta: timedelta) -> str:
     return str_from_datetime(datetime.fromtimestamp(timestamp_in_ms // 1000, tz=timezone.utc) - delta)
 
 
-def get_end_datetime_str(today: date) -> str:
-    today_datetime = datetime(year=today.year, month=today.month, day=today.day, tzinfo=timezone.utc)
-    end = today_datetime + timedelta(days=180)
+def get_end_datetime_str(now: datetime) -> str:
+    end = now + timedelta(hours=3) - timedelta(microseconds=now.microsecond)
     return str_from_datetime(end)
 
 
@@ -152,36 +145,34 @@ def hazard_uuid_from_subscription_name(name: str) -> str:
     return name.removeprefix(prefix)
 
 
-def get_hyp3_subscription(hazard: dict, today: date, start_delta=timedelta(days=1)) -> dict:
+def get_hyp3_subscription(hazard: dict, now: datetime, start_delta=timedelta(days=1)) -> dict:
     # TODO decide on appropriate default value for start_delta
     start = get_start_datetime_str(int(hazard['start_Date']), start_delta)
-    end = get_end_datetime_str(today)
+    end = get_end_datetime_str(now)
     aoi = get_aoi(hazard)
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
     return {
-        'subscription': {
-            'search_parameters': {
-                'platform': 'S1',
-                'processingLevel': 'SLC',
-                'beamMode': ['IW'],
-                'polarization': ['VV+VH'],
-                'start': start,
-                'end': end,
-                'intersectsWith': aoi
+        'search_parameters': {
+            'platform': 'S1',
+            'processingLevel': 'SLC',
+            'beamMode': ['IW'],
+            'polarization': ['VV+VH'],
+            'start': start,
+            'end': end,
+            'intersectsWith': aoi
+        },
+        'job_specification': {
+            'job_type': 'WATER_MAP',
+            'job_parameters': {
+                'resolution': 30,
+                'speckle_filter': True,
+                'max_vv_threshold': -15.5,
+                'max_vh_threshold': -23.0,
+                'hand_threshold': 15.0,
+                'hand_fraction': 0.8,
+                'membership_threshold': 0.45
             },
-            'job_specification': {
-                'job_type': 'WATER_MAP',
-                'job_parameters': {
-                    'resolution': 30,
-                    'speckle_filter': True,
-                    'max_vv_threshold': -15.5,
-                    'max_vh_threshold': -23.0,
-                    'hand_threshold': 15.0,
-                    'hand_fraction': 0.8,
-                    'membership_threshold': 0.45
-                },
-                'name': name
-            }
+            'name': name
         }
     }
 
@@ -189,14 +180,15 @@ def get_hyp3_subscription(hazard: dict, today: date, start_delta=timedelta(days=
 def get_env_var(name: str) -> str:
     val = os.getenv(name)
     if not val:
-        raise MissingEnvVarError(name)
+        raise MissingEnvVar(name)
     return val
 
 
-def get_today() -> date:
-    return datetime.utcnow().date()
+def get_now() -> datetime:
+    return datetime.now(tz=timezone.utc)
 
 
+# TODO remove extra newlines in logging
 def lambda_handler(event, context) -> None:
     hyp3_url = HYP3_URL_TEST
 
@@ -218,21 +210,6 @@ def lambda_handler(event, context) -> None:
     active_hazards = filter_hazards(active_hazards)
     print(f"Active hazards (after filtering): {len(active_hazards)}\n")
 
-    print('Fetching enabled subscriptions')
-    enabled_subscriptions = get_enabled_subscriptions(session, hyp3_url)
-    print(f"Enabled subscriptions: {len(enabled_subscriptions['subscriptions'])}\n")
+    process_active_hazards(session, hyp3_url, active_hazards, get_now())
 
-    new_active_hazards, inactive_hazard_subscription_ids = \
-        get_new_and_inactive_hazards(active_hazards, enabled_subscriptions)
-
-    print(f"New active hazards: {len(new_active_hazards)}")
-    print(f"Inactive hazards: {len(inactive_hazard_subscription_ids)}\n")
-
-    # TODO check each existing subscription (except the ones for inactive hazards) and for any that will expire
-    #  soon, update their end datetime (see get_end_datetime_str)
-
-    today = get_today()
-    new_subscriptions = [get_hyp3_subscription(hazard, today) for hazard in new_active_hazards]
-    submit_subscriptions(session, hyp3_url, new_subscriptions)
-
-    disable_subscriptions(session, hyp3_url, inactive_hazard_subscription_ids)
+    # TODO finish lambda handler, remove unused functions and tests, update lambda handler tests

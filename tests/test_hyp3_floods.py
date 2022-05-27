@@ -1,62 +1,6 @@
 from datetime import date, datetime, timedelta, timezone
 
-import pytest
-
 import hyp3_floods
-
-
-def test_get_new_and_inactive_hazards():
-    active_hazards = [
-        {'uuid': 'new1'},
-        {'uuid': 'existing1'},
-        {'uuid': 'new2'},
-        {'uuid': 'existing2'},
-    ]
-    enabled_subscriptions = {
-        'subscriptions': [
-            {'subscription_id': 'sub1', 'job_specification': {'name': 'PDC-hazard-old1'}},
-            {'subscription_id': 'sub2', 'job_specification': {'name': 'PDC-hazard-existing1'}},
-            {'subscription_id': 'sub3', 'job_specification': {'name': 'PDC-hazard-old2'}},
-            {'subscription_id': 'sub4', 'job_specification': {'name': 'PDC-hazard-existing2'}},
-        ]
-    }
-    new_active_hazards = [
-        {'uuid': 'new1'},
-        {'uuid': 'new2'},
-    ]
-    inactive_hazard_subscription_ids = ['sub1', 'sub3']
-
-    assert hyp3_floods.get_new_and_inactive_hazards(active_hazards, enabled_subscriptions) \
-           == (new_active_hazards, inactive_hazard_subscription_ids)
-
-
-def test_map_hazard_uuids_to_subscription_ids():
-    subscriptions = {
-        'subscriptions': [
-            {'subscription_id': 'aaa', 'job_specification': {'name': 'PDC-hazard-111'}},
-            {'subscription_id': 'bbb', 'job_specification': {'name': 'PDC-hazard-222'}},
-            {'subscription_id': 'ccc', 'job_specification': {'name': 'PDC-hazard-333'}},
-        ]
-    }
-    result = {
-        '111': 'aaa',
-        '222': 'bbb',
-        '333': 'ccc',
-    }
-    assert hyp3_floods.map_hazard_uuids_to_subscription_ids(subscriptions) == result
-
-
-def test_map_hazard_uuids_to_subscription_ids_with_duplicates():
-    subscriptions = {
-        'subscriptions': [
-            {'subscription_id': 'aaa', 'job_specification': {'name': 'PDC-hazard-111'}},
-            {'subscription_id': 'bbb', 'job_specification': {'name': 'PDC-hazard-222'}},
-            {'subscription_id': 'ccc', 'job_specification': {'name': 'PDC-hazard-333'}},
-            {'subscription_id': 'ddd', 'job_specification': {'name': 'PDC-hazard-222'}},
-        ]
-    }
-    with pytest.raises(hyp3_floods.DuplicateSubscriptionNamesError):
-        hyp3_floods.map_hazard_uuids_to_subscription_ids(subscriptions)
 
 
 def test_filter_hazards():
@@ -109,9 +53,9 @@ def test_get_start_datetime_str_truncate():
 
 
 def test_get_end_datetime_str():
-    today = date(year=2022, month=4, day=18)
-    datetime_str = '2022-10-15T00:00:00Z'
-    assert hyp3_floods.get_end_datetime_str(today) == datetime_str
+    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
+    datetime_str = '2022-05-27T23:14:34Z'
+    assert hyp3_floods.get_end_datetime_str(now) == datetime_str
 
 
 def test_subscription_name_from_hazard_uuid():
@@ -134,38 +78,36 @@ def test_get_hyp3_subscription():
         'longitude': -90.4527,
     }
 
-    today = date(year=2022, month=4, day=18)
+    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
 
     # Adapted from:
     # https://github.com/ASFHyP3/hyp3-nasa-disasters/blob/main/data_management/pdc_brazil.json
     subscription = {
-        'subscription': {
-            'search_parameters': {
-                'platform': 'S1',
-                'processingLevel': 'SLC',
-                'beamMode': ['IW'],
-                'polarization': ['VV+VH'],
-                'start': '2021-12-10T21:09:03Z',
-                'end': '2022-10-15T00:00:00Z',
-                'intersectsWith': 'POINT(-90.4527 37.949)'
+        'search_parameters': {
+            'platform': 'S1',
+            'processingLevel': 'SLC',
+            'beamMode': ['IW'],
+            'polarization': ['VV+VH'],
+            'start': '2021-12-10T21:09:03Z',
+            'end': '2022-05-27T23:14:34Z',
+            'intersectsWith': 'POINT(-90.4527 37.949)'
+        },
+        'job_specification': {
+            'job_type': 'WATER_MAP',
+            'job_parameters': {
+                'resolution': 30,
+                'speckle_filter': True,
+                'max_vv_threshold': -15.5,
+                'max_vh_threshold': -23.0,
+                'hand_threshold': 15.0,
+                'hand_fraction': 0.8,
+                'membership_threshold': 0.45
             },
-            'job_specification': {
-                'job_type': 'WATER_MAP',
-                'job_parameters': {
-                    'resolution': 30,
-                    'speckle_filter': True,
-                    'max_vv_threshold': -15.5,
-                    'max_vh_threshold': -23.0,
-                    'hand_threshold': 15.0,
-                    'hand_fraction': 0.8,
-                    'membership_threshold': 0.45
-                },
-                'name': 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
-            }
+            'name': 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
         }
     }
 
-    assert hyp3_floods.get_hyp3_subscription(hazard, today, start_delta=timedelta(0)) == subscription
+    assert hyp3_floods.get_hyp3_subscription(hazard, now, start_delta=timedelta(0)) == subscription
 
-    subscription['subscription']['search_parameters']['start'] = '2021-12-09T21:09:03Z'
-    assert hyp3_floods.get_hyp3_subscription(hazard, today) == subscription
+    subscription['search_parameters']['start'] = '2021-12-09T21:09:03Z'
+    assert hyp3_floods.get_hyp3_subscription(hazard, now) == subscription
