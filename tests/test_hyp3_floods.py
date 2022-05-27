@@ -73,7 +73,6 @@ def test_process_active_hazard_update():
 
     hazard = {
         'uuid': '123',
-        'start_Date': '1650388111000',
         'latitude': 38.39,
         'longitude': 47.94
     }
