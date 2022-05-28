@@ -82,9 +82,6 @@ def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict
             print(f"Error while processing hazard: {e}")
 
 
-# TODO rename functions to make it clear what's fetching via network (see the get_ functions)
-
-
 def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, now: datetime) -> None:
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
     print(f"Fetching existing subscription with name: {name}")
