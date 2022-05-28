@@ -74,7 +74,6 @@ def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional
 
 
 def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict], now: datetime) -> None:
-    # TODO tests?
     for count, hazard in enumerate(active_hazards, start=1):
         print(f"({count}/{len(active_hazards)}) Processing hazard {hazard['uuid']}")
         try:
@@ -193,7 +192,6 @@ def get_now() -> datetime:
     return datetime.now(tz=timezone.utc)
 
 
-# TODO remove extra newlines in logging
 def lambda_handler(event, context) -> None:
     hyp3_url = HYP3_URL_TEST
 
@@ -204,7 +202,7 @@ def lambda_handler(event, context) -> None:
     earthdata_username = get_env_var('EARTHDATA_USERNAME')
     earthdata_password = get_env_var('EARTHDATA_PASSWORD')
 
-    print(f"Earthdata user: {earthdata_username}\n")
+    print(f"Earthdata user: {earthdata_username}")
 
     hyp3 = HyP3SubscriptionsAPI(hyp3_url, earthdata_username, earthdata_password)
 
@@ -213,9 +211,7 @@ def lambda_handler(event, context) -> None:
     print(f"Active hazards (before filtering): {len(active_hazards)}")
 
     active_hazards = filter_hazards(active_hazards)
-    print(f"Active hazards (after filtering): {len(active_hazards)}\n")
+    print(f"Active hazards (after filtering): {len(active_hazards)}")
 
     # TODO refactor to only call get_end_datetime_str here?
     process_active_hazards(hyp3, active_hazards, get_now())
-
-    # TODO finish lambda handler, remove unused functions and tests, update lambda handler tests
