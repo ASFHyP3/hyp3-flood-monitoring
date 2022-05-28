@@ -213,5 +213,4 @@ def lambda_handler(event, context) -> None:
     active_hazards = filter_hazards(active_hazards)
     print(f"Active hazards (after filtering): {len(active_hazards)}")
 
-    # TODO refactor to only call get_end_datetime_str here?
     process_active_hazards(hyp3, active_hazards, get_now())
