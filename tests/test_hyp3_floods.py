@@ -1,9 +1,17 @@
+import os
 from datetime import datetime, timedelta, timezone
-from unittest.mock import NonCallableMock
+from unittest.mock import NonCallableMock, patch, MagicMock, call
 
 import pytest
 
 import hyp3_floods
+
+
+MOCK_ENV = {
+    'PDC_HAZARDS_AUTH_TOKEN': 'test-token',
+    'EARTHDATA_USERNAME': 'test-user',
+    'EARTHDATA_PASSWORD': 'test-pass'
+}
 
 
 def get_test_subscription(start: str, end: str, aoi: str, name: str) -> dict:
@@ -31,6 +39,48 @@ def get_test_subscription(start: str, end: str, aoi: str, name: str) -> dict:
             'name': name
         }
     }
+
+
+@patch('hyp3_floods.get_now')
+@patch('hyp3_floods.process_active_hazard')
+@patch('hyp3_floods.get_active_hazards')
+@patch('hyp3_floods.HyP3SubscriptionsAPI')
+@patch.dict(os.environ, MOCK_ENV, clear=True)
+def test_lambda_handler(
+        mock_hyp3_api_class: MagicMock,
+        mock_get_active_hazards: MagicMock,
+        mock_process_active_hazard: MagicMock,
+        mock_get_now: MagicMock,
+        ):
+    mock_hyp3_api = NonCallableMock()
+    mock_hyp3_api_class.return_value = mock_hyp3_api
+
+    mock_get_active_hazards.return_value = [
+        {'uuid': '1', 'type_ID': 'FLOOD'},
+        {'uuid': '2', 'type_ID': 'foo'},
+        {'uuid': '3', 'type_ID': 'FLOOD'},
+        {'uuid': '4', 'type_ID': 'bar'},
+    ]
+
+    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
+    mock_get_now.return_value = now
+
+    hyp3_floods.lambda_handler(None, None)
+
+    mock_hyp3_api_class.assert_called_once_with(hyp3_floods.HYP3_URL_TEST, 'test-user', 'test-pass')
+    mock_get_active_hazards.assert_called_once_with('test-token')
+    mock_get_now.assert_called_once_with()
+
+    assert mock_process_active_hazard.mock_calls == [
+        call(mock_hyp3_api, {'uuid': '1', 'type_ID': 'FLOOD'}, now),
+        call(mock_hyp3_api, {'uuid': '3', 'type_ID': 'FLOOD'}, now),
+    ]
+
+
+@patch.dict(os.environ, {}, clear=True)
+def test_lambda_handler_missing_env_var():
+    with pytest.raises(hyp3_floods.MissingEnvVar):
+        hyp3_floods.lambda_handler(None, None)
 
 
 def test_process_active_hazard_submit():
