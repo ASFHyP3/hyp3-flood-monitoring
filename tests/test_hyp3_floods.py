@@ -213,12 +213,6 @@ def test_subscription_name_from_hazard_uuid():
     assert hyp3_floods.subscription_name_from_hazard_uuid(uuid) == name
 
 
-def test_hazard_uuid_from_subscription_name():
-    name = 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
-    uuid = '595467f9-77f2-4036-87d3-ef9e5e4ad939'
-    assert hyp3_floods.hazard_uuid_from_subscription_name(name) == uuid
-
-
 def test_get_hyp3_subscription():
     start = 'test-start-datetime'
     end = 'test-end-datetime'

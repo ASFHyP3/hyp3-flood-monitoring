@@ -145,12 +145,6 @@ def subscription_name_from_hazard_uuid(uuid: str) -> str:
     return f'PDC-hazard-{uuid}'
 
 
-def hazard_uuid_from_subscription_name(name: str) -> str:
-    prefix = 'PDC-hazard-'
-    assert name.startswith(prefix)
-    return name.removeprefix(prefix)
-
-
 def get_hyp3_subscription(start: str, end: str, aoi: str, name: str) -> dict:
     # Adapted from:
     # https://github.com/ASFHyP3/hyp3-nasa-disasters/blob/main/data_management/pdc_brazil.json
