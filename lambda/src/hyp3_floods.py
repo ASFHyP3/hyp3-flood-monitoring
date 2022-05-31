@@ -78,22 +78,21 @@ def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional
     return subscriptions[0] if subscriptions else None
 
 
-def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict], now: datetime) -> None:
+def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict], end: str) -> None:
     for count, hazard in enumerate(active_hazards, start=1):
         print(f"({count}/{len(active_hazards)}) Processing hazard {hazard['uuid']}")
         try:
-            process_active_hazard(hyp3, hazard, now)
+            process_active_hazard(hyp3, hazard, end)
         except (requests.HTTPError, DuplicateSubscriptionNames, OutdatedAOI) as e:
             print(f"Error while processing hazard: {e}")
 
 
-def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, now: datetime) -> None:
+def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) -> None:
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
     print(f"Fetching existing subscription with name: {name}")
     existing_subscription = get_existing_subscription(hyp3, name)
 
     aoi = get_aoi(hazard)
-    end = get_end_datetime_str(now)
 
     if existing_subscription:
         compare_aoi(existing_subscription, aoi)
@@ -206,4 +205,5 @@ def lambda_handler(event, context) -> None:
     active_hazards = filter_hazards(active_hazards)
     print(f"Active hazards (after filtering): {len(active_hazards)}")
 
-    process_active_hazards(hyp3, active_hazards, get_now())
+    end = get_end_datetime_str(get_now())
+    process_active_hazards(hyp3, active_hazards, end)

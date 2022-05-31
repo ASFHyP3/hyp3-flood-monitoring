@@ -44,9 +44,10 @@ def test_lambda_handler(
     mock_get_active_hazards.assert_called_once_with('test-token')
     mock_get_now.assert_called_once_with()
 
+    end = '2022-05-27T23:14:34Z'
     assert mock_process_active_hazard.mock_calls == [
-        call(mock_hyp3_api, {'uuid': '1', 'type_ID': 'FLOOD'}, now),
-        call(mock_hyp3_api, {'uuid': '3', 'type_ID': 'FLOOD'}, now),
+        call(mock_hyp3_api, {'uuid': '1', 'type_ID': 'FLOOD'}, end),
+        call(mock_hyp3_api, {'uuid': '3', 'type_ID': 'FLOOD'}, end),
     ]
 
 
@@ -67,9 +68,9 @@ def test_process_active_hazard_submit():
         'latitude': 38.39,
         'longitude': 47.94
     }
-    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
+    end = 'test-end-datetime'
 
-    hyp3_floods.process_active_hazard(mock_hyp3, hazard, now)
+    hyp3_floods.process_active_hazard(mock_hyp3, hazard, end)
 
     name = 'PDC-hazard-123'
     new_subscription = {
@@ -79,7 +80,7 @@ def test_process_active_hazard_submit():
             'beamMode': ['IW'],
             'polarization': ['VV+VH'],
             'start': '2022-04-18T17:08:31Z',
-            'end': '2022-05-27T23:14:34Z',
+            'end': end,
             'intersectsWith': 'POINT(47.94 38.39)'
         },
         'job_specification': {
@@ -117,12 +118,12 @@ def test_process_active_hazard_update():
         'latitude': 38.39,
         'longitude': 47.94
     }
-    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
+    end = 'test-end-datetime'
 
-    hyp3_floods.process_active_hazard(mock_hyp3, hazard, now)
+    hyp3_floods.process_active_hazard(mock_hyp3, hazard, end)
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
-    mock_hyp3.update_subscription.assert_called_once_with('789', '2022-05-27T23:14:34Z')
+    mock_hyp3.update_subscription.assert_called_once_with('789', end)
 
 
 def test_process_active_hazard_duplicate_subscription_names():
@@ -132,10 +133,9 @@ def test_process_active_hazard_duplicate_subscription_names():
     }
 
     hazard = {'uuid': '123'}
-    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
 
     with pytest.raises(hyp3_floods.DuplicateSubscriptionNames):
-        hyp3_floods.process_active_hazard(mock_hyp3, hazard, now)
+        hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime')
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
@@ -156,10 +156,9 @@ def test_process_active_hazard_outdated_aoi():
         'latitude': 38.39,
         'longitude': 47.94
     }
-    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
 
     with pytest.raises(hyp3_floods.OutdatedAOI):
-        hyp3_floods.process_active_hazard(mock_hyp3, hazard, now)
+        hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime')
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
