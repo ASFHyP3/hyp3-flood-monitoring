@@ -172,24 +172,22 @@ def test_filter_hazards():
         {'hazard_ID': 4, 'type_ID': 'baz'},
         {'hazard_ID': 5, 'type_ID': 'FLOOD'},
     ]
-    filtered = [
+    expected_filtered = [
         {'hazard_ID': 0, 'type_ID': 'FLOOD'},
         {'hazard_ID': 2, 'type_ID': 'FLOOD'},
         {'hazard_ID': 5, 'type_ID': 'FLOOD'},
     ]
-    assert hyp3_floods.filter_hazards(hazards) == filtered
+    assert hyp3_floods.filter_hazards(hazards) == expected_filtered
 
 
 def test_get_aoi():
     hazard = {'latitude': 37.949, 'longitude': -90.4527}
-    aoi = 'POINT(-90.4527 37.949)'
-    assert hyp3_floods.get_aoi(hazard) == aoi
+    assert hyp3_floods.get_aoi(hazard) == 'POINT(-90.4527 37.949)'
 
 
 def test_str_from_datetime():
     date_time = datetime(year=2021, month=12, day=10, hour=21, minute=9, second=3, tzinfo=timezone.utc)
-    datetime_str = '2021-12-10T21:09:03Z'
-    assert hyp3_floods.str_from_datetime(date_time) == datetime_str
+    assert hyp3_floods.str_from_datetime(date_time) == '2021-12-10T21:09:03Z'
 
 
 def test_get_start_datetime_str():
@@ -202,14 +200,13 @@ def test_get_start_datetime_str():
 
 def test_get_end_datetime_str():
     now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
-    datetime_str = '2022-05-27T23:14:34Z'
-    assert hyp3_floods.get_end_datetime_str(now) == datetime_str
+    assert hyp3_floods.get_end_datetime_str(now) == '2022-05-27T23:14:34Z'
 
 
 def test_subscription_name_from_hazard_uuid():
     uuid = '595467f9-77f2-4036-87d3-ef9e5e4ad939'
-    name = 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
-    assert hyp3_floods.subscription_name_from_hazard_uuid(uuid) == name
+    expected_name = 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
+    assert hyp3_floods.subscription_name_from_hazard_uuid(uuid) == expected_name
 
 
 def test_get_hyp3_subscription():
@@ -218,7 +215,7 @@ def test_get_hyp3_subscription():
     aoi = 'test-aoi'
     name = 'test-subscription-name'
 
-    subscription = {
+    expected_subscription = {
         'search_parameters': {
             'platform': 'S1',
             'processingLevel': 'SLC',
@@ -243,4 +240,4 @@ def test_get_hyp3_subscription():
         }
     }
 
-    assert hyp3_floods.get_hyp3_subscription(start, end, aoi, name) == subscription
+    assert hyp3_floods.get_hyp3_subscription(start, end, aoi, name) == expected_subscription
