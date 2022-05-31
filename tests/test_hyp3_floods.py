@@ -194,23 +194,11 @@ def test_str_from_datetime():
 
 
 def test_get_start_datetime_str():
-    timestamp = 1639170543000
-
-    datetime_str = '2021-12-10T21:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(0)) == datetime_str
-
-    datetime_str_with_delta = '2021-12-09T21:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(days=1)) == datetime_str_with_delta
-
-
-def test_get_start_datetime_str_truncate():
     timestamp = 1639170543789
-
-    datetime_str = '2021-12-10T21:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(0)) == datetime_str
-
-    datetime_str_with_delta = '2021-12-09T21:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(days=1)) == datetime_str_with_delta
+    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(0)) == '2021-12-10T21:09:03Z'
+    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(days=1)) == '2021-12-09T21:09:03Z'
+    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(days=2)) == '2021-12-08T21:09:03Z'
+    assert hyp3_floods.get_start_datetime_str(timestamp) == '2021-12-09T21:09:03Z'
 
 
 def test_get_end_datetime_str():
@@ -232,26 +220,20 @@ def test_hazard_uuid_from_subscription_name():
 
 
 def test_get_hyp3_subscription():
-    hazard = {
-        'uuid': '595467f9-77f2-4036-87d3-ef9e5e4ad939',
-        'start_Date': '1639170543789',
-        'latitude': 37.949,
-        'longitude': -90.4527,
-    }
+    start = 'test-start-datetime'
+    end = 'test-end-datetime'
+    aoi = 'test-aoi'
+    name = 'test-subscription-name'
 
-    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
-
-    # Adapted from:
-    # https://github.com/ASFHyP3/hyp3-nasa-disasters/blob/main/data_management/pdc_brazil.json
     subscription = {
         'search_parameters': {
             'platform': 'S1',
             'processingLevel': 'SLC',
             'beamMode': ['IW'],
             'polarization': ['VV+VH'],
-            'start': '2021-12-10T21:09:03Z',
-            'end': '2022-05-27T23:14:34Z',
-            'intersectsWith': 'POINT(-90.4527 37.949)'
+            'start': start,
+            'end': end,
+            'intersectsWith': aoi
         },
         'job_specification': {
             'job_type': 'WATER_MAP',
@@ -264,11 +246,8 @@ def test_get_hyp3_subscription():
                 'hand_fraction': 0.8,
                 'membership_threshold': 0.45
             },
-            'name': 'PDC-hazard-595467f9-77f2-4036-87d3-ef9e5e4ad939'
+            'name': name
         }
     }
 
-    assert hyp3_floods.get_hyp3_subscription(hazard, now, start_delta=timedelta(0)) == subscription
-
-    subscription['search_parameters']['start'] = '2021-12-09T21:09:03Z'
-    assert hyp3_floods.get_hyp3_subscription(hazard, now) == subscription
+    assert hyp3_floods.get_hyp3_subscription(start, end, aoi, name) == subscription

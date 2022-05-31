@@ -87,14 +87,18 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, now: datetim
     print(f"Fetching existing subscription with name: {name}")
     existing_subscription = get_existing_subscription(hyp3, name)
 
+    aoi = get_aoi(hazard)
+    end = get_end_datetime_str(now)
+
     if existing_subscription:
-        compare_aoi(existing_subscription, get_aoi(hazard))
+        compare_aoi(existing_subscription, aoi)
         subscription_id = existing_subscription['subscription_id']
         print(f"Updating subscription with id: {subscription_id}")
-        hyp3.update_subscription(subscription_id, get_end_datetime_str(now))
+        hyp3.update_subscription(subscription_id, end)
     else:
         print('No existing subscription; submitting new subscription')
-        new_subscription = get_hyp3_subscription(hazard, now)
+        start = get_start_datetime_str(int(hazard['start_Date']))
+        new_subscription = get_hyp3_subscription(start, end, aoi, name)
         response = hyp3.submit_subscription(new_subscription)
         subscription_id = response['subscription']['subscription_id']
         print(f"Got subscription id: {subscription_id}")
@@ -127,7 +131,8 @@ def str_from_datetime(date_time: datetime) -> str:
     return datetime_str.removesuffix('+00:00') + 'Z'
 
 
-def get_start_datetime_str(timestamp_in_ms: int, delta: timedelta) -> str:
+def get_start_datetime_str(timestamp_in_ms: int, delta=timedelta(days=1)) -> str:
+    # TODO decide on appropriate default value for delta
     return str_from_datetime(datetime.fromtimestamp(timestamp_in_ms // 1000, tz=timezone.utc) - delta)
 
 
@@ -146,12 +151,9 @@ def hazard_uuid_from_subscription_name(name: str) -> str:
     return name.removeprefix(prefix)
 
 
-def get_hyp3_subscription(hazard: dict, now: datetime, start_delta=timedelta(days=1)) -> dict:
-    # TODO decide on appropriate default value for start_delta
-    start = get_start_datetime_str(int(hazard['start_Date']), start_delta)
-    end = get_end_datetime_str(now)
-    aoi = get_aoi(hazard)
-    name = subscription_name_from_hazard_uuid(hazard['uuid'])
+def get_hyp3_subscription(start: str, end: str, aoi: str, name: str) -> dict:
+    # Adapted from:
+    # https://github.com/ASFHyP3/hyp3-nasa-disasters/blob/main/data_management/pdc_brazil.json
     return {
         'search_parameters': {
             'platform': 'S1',
