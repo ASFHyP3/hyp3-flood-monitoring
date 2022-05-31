@@ -65,6 +65,11 @@ def get_active_hazards(auth_token: str) -> list[dict]:
     return response.json()
 
 
+def filter_hazards(hazards: list[dict]) -> list[dict]:
+    # TODO should we include other hazard types?
+    return [hazard for hazard in hazards if hazard['type_ID'] == 'FLOOD']
+
+
 def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional[dict]:
     response = hyp3.get_subscriptions_by_name(name)
     subscriptions = response['subscriptions']
@@ -112,11 +117,6 @@ def compare_aoi(existing_subscription: dict, new_aoi: str) -> None:
             f"Subscription with id {subscription_id} has AOI {existing_aoi} but the current AOI is {new_aoi}."
             " This indicates that we need to implement a way to update subscription AOI."
         )
-
-
-def filter_hazards(hazards: list[dict]) -> list[dict]:
-    # TODO should we include other hazard types?
-    return [hazard for hazard in hazards if hazard['type_ID'] == 'FLOOD']
 
 
 def get_aoi(hazard: dict) -> str:
