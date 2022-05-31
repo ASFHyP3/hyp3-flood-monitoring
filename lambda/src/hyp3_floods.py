@@ -74,22 +74,22 @@ def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional
     response = hyp3.get_subscriptions_by_name(name)
     subscriptions = response['subscriptions']
     if len(subscriptions) > 1:
-        raise DuplicateSubscriptionNames(f"Got {len(subscriptions)} subscriptions with name {name} (expected 0 or 1)")
+        raise DuplicateSubscriptionNames(f'Got {len(subscriptions)} subscriptions with name {name} (expected 0 or 1)')
     return subscriptions[0] if subscriptions else None
 
 
 def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict], end: str) -> None:
     for count, hazard in enumerate(active_hazards, start=1):
-        print(f"({count}/{len(active_hazards)}) Processing hazard {hazard['uuid']}")
+        print(f'({count}/{len(active_hazards)}) Processing hazard {hazard["uuid"]}')
         try:
             process_active_hazard(hyp3, hazard, end)
         except (requests.HTTPError, DuplicateSubscriptionNames, OutdatedAOI) as e:
-            print(f"Error while processing hazard: {e}")
+            print(f'Error while processing hazard: {e}')
 
 
 def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) -> None:
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
-    print(f"Fetching existing subscription with name: {name}")
+    print(f'Fetching existing subscription with name: {name}')
     existing_subscription = get_existing_subscription(hyp3, name)
 
     aoi = get_aoi(hazard)
@@ -97,7 +97,7 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
     if existing_subscription:
         compare_aoi(existing_subscription, aoi)
         subscription_id = existing_subscription['subscription_id']
-        print(f"Updating subscription with id: {subscription_id}")
+        print(f'Updating subscription with id: {subscription_id}')
         hyp3.update_subscription(subscription_id, end)
     else:
         print('No existing subscription; submitting new subscription')
@@ -105,7 +105,7 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
         new_subscription = get_hyp3_subscription(start, end, aoi, name)
         response = hyp3.submit_subscription(new_subscription)
         subscription_id = response['subscription']['subscription_id']
-        print(f"Got subscription id: {subscription_id}")
+        print(f'Got subscription id: {subscription_id}')
 
 
 def compare_aoi(existing_subscription: dict, new_aoi: str) -> None:
@@ -113,14 +113,14 @@ def compare_aoi(existing_subscription: dict, new_aoi: str) -> None:
     existing_aoi = existing_subscription['search_parameters']['intersectsWith']
     if existing_aoi != new_aoi:
         raise OutdatedAOI(
-            f"Subscription with id {subscription_id} has AOI {existing_aoi} but the current AOI is {new_aoi}."
-            " This indicates that we need to implement a way to update subscription AOI."
+            f'Subscription with id {subscription_id} has AOI {existing_aoi} but the current AOI is {new_aoi}.'
+            ' This indicates that we need to implement a way to update subscription AOI.'
         )
 
 
 def get_aoi(hazard: dict) -> str:
     # TODO get real aoi
-    return f"POINT({hazard['longitude']} {hazard['latitude']})"
+    return f'POINT({hazard["longitude"]} {hazard["latitude"]})'
 
 
 def str_from_datetime(date_time: datetime) -> str:
@@ -187,23 +187,23 @@ def get_now() -> datetime:
 def lambda_handler(event, context) -> None:
     hyp3_url = HYP3_URL_TEST
 
-    print(f"PDC API URL: {PDC_URL}")
-    print(f"HyP3 API URL: {hyp3_url}")
+    print(f'PDC API URL: {PDC_URL}')
+    print(f'HyP3 API URL: {hyp3_url}')
 
     auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN')
     earthdata_username = get_env_var('EARTHDATA_USERNAME')
     earthdata_password = get_env_var('EARTHDATA_PASSWORD')
 
-    print(f"Earthdata user: {earthdata_username}")
+    print(f'Earthdata user: {earthdata_username}')
 
     hyp3 = HyP3SubscriptionsAPI(hyp3_url, earthdata_username, earthdata_password)
 
     print('Fetching active hazards')
     active_hazards = get_active_hazards(auth_token)
-    print(f"Active hazards (before filtering): {len(active_hazards)}")
+    print(f'Active hazards (before filtering): {len(active_hazards)}')
 
     active_hazards = filter_hazards(active_hazards)
-    print(f"Active hazards (after filtering): {len(active_hazards)}")
+    print(f'Active hazards (after filtering): {len(active_hazards)}')
 
     end = get_end_datetime_str(get_now())
     process_active_hazards(hyp3, active_hazards, end)
