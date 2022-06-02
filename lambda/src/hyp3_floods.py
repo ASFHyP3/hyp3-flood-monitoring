@@ -69,9 +69,9 @@ def filter_hazards(hazards: list[dict]) -> list[dict]:
     return list(filter(is_valid_hazard, hazards))
 
 
-def is_valid_hazard(hazard: dict) -> bool:
+def is_valid_hazard(hazard: dict, current_time_in_ms: int) -> bool:
     # TODO should we include other hazard types?
-    return hazard['type_ID'] == 'FLOOD'
+    return hazard['type_ID'] == 'FLOOD' and int(hazard['start_Date']) <= current_time_in_ms
 
 
 def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional[dict]:
