@@ -81,7 +81,7 @@ def test_process_active_hazard_submit():
             'processingLevel': 'SLC',
             'beamMode': ['IW'],
             'polarization': ['VV+VH'],
-            'start': '2022-04-18T17:08:31Z',
+            'start': '2022-04-19T16:08:31Z',
             'end': end,
             'intersectsWith': 'POINT(47.94 38.39)'
         },
@@ -203,9 +203,9 @@ def test_str_from_datetime():
 def test_get_start_datetime_str():
     timestamp = 1639170543789
     assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(0)) == '2021-12-10T21:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(days=1)) == '2021-12-09T21:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(days=2)) == '2021-12-08T21:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp) == '2021-12-09T21:09:03Z'
+    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(hours=1)) == '2021-12-10T20:09:03Z'
+    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(hours=2)) == '2021-12-10T19:09:03Z'
+    assert hyp3_floods.get_start_datetime_str(timestamp) == '2021-12-10T20:09:03Z'
 
 
 def test_get_end_datetime_str():

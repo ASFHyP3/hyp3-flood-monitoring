@@ -135,7 +135,7 @@ def str_from_datetime(date_time: datetime) -> str:
     return datetime_str.removesuffix('+00:00') + 'Z'
 
 
-def get_start_datetime_str(timestamp_in_ms: int, delta=timedelta(days=1)) -> str:
+def get_start_datetime_str(timestamp_in_ms: int, delta=timedelta(hours=1)) -> str:
     # TODO decide on appropriate default value for delta
     return str_from_datetime(datetime.fromtimestamp(timestamp_in_ms // 1000, tz=timezone.utc) - delta)
 
