@@ -65,8 +65,8 @@ def get_active_hazards(auth_token: str) -> list[dict]:
     return response.json()
 
 
-def filter_hazards(hazards: list[dict]) -> list[dict]:
-    return list(filter(is_valid_hazard, hazards))
+def filter_hazards(hazards: list[dict], current_time_in_ms: int) -> list[dict]:
+    return [hazard for hazard in hazards if is_valid_hazard(hazard, current_time_in_ms)]
 
 
 def is_valid_hazard(hazard: dict, current_time_in_ms: int) -> bool:

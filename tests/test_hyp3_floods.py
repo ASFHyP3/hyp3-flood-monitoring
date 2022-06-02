@@ -165,19 +165,17 @@ def test_process_active_hazard_outdated_aoi():
 
 def test_filter_hazards():
     hazards = [
-        {'hazard_ID': 0, 'type_ID': 'FLOOD'},
-        {'hazard_ID': 1, 'type_ID': 'foo'},
-        {'hazard_ID': 2, 'type_ID': 'FLOOD'},
-        {'hazard_ID': 3, 'type_ID': 'bar'},
-        {'hazard_ID': 4, 'type_ID': 'baz'},
-        {'hazard_ID': 5, 'type_ID': 'FLOOD'},
+        {'hazard_ID': 0, 'type_ID': 'FLOOD', 'start_Date': 1},
+        {'hazard_ID': 1, 'type_ID': 'foo', 'start_Date': 1},
+        {'hazard_ID': 2, 'type_ID': 'FLOOD', 'start_Date': 2},
+        {'hazard_ID': 3, 'type_ID': 'bar', 'start_Date': 2},
+        {'hazard_ID': 4, 'type_ID': 'FLOOD', 'start_Date': 3},
+        {'hazard_ID': 5, 'type_ID': 'baz', 'start_Date': 3},
     ]
-    expected_filtered = [
-        {'hazard_ID': 0, 'type_ID': 'FLOOD'},
-        {'hazard_ID': 2, 'type_ID': 'FLOOD'},
-        {'hazard_ID': 5, 'type_ID': 'FLOOD'},
-    ]
-    assert hyp3_floods.filter_hazards(hazards) == expected_filtered
+    assert hyp3_floods.filter_hazards(hazards, 0) == []
+    assert hyp3_floods.filter_hazards(hazards, 1) == [hazards[0]]
+    assert hyp3_floods.filter_hazards(hazards, 2) == [hazards[0], hazards[2]]
+    assert hyp3_floods.filter_hazards(hazards, 3) == [hazards[0], hazards[2], hazards[4]]
 
 
 def test_is_valid_hazard():
