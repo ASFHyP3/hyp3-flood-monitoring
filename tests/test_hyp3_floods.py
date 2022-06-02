@@ -184,7 +184,10 @@ def test_is_valid_hazard():
     assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 1}, 2) is True
     assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 2}, 2) is True
     assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 3}, 2) is False
+
     assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 1}, 2) is False
+    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 2}, 2) is False
+    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 3}, 2) is False
 
 
 def test_get_aoi():
