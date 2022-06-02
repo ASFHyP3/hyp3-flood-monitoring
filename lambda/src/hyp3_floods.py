@@ -1,4 +1,5 @@
 import os
+import time
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -188,6 +189,10 @@ def get_now() -> datetime:
     return datetime.now(tz=timezone.utc)
 
 
+def get_current_time_in_ms() -> int:
+    return int(time.time() * 1000)
+
+
 def lambda_handler(event, context) -> None:
     hyp3_url = HYP3_URL_TEST
 
@@ -206,8 +211,10 @@ def lambda_handler(event, context) -> None:
     active_hazards = get_active_hazards(auth_token)
     print(f'Active hazards (before filtering): {len(active_hazards)}')
 
-    active_hazards = filter_hazards(active_hazards)
+    current_time_in_ms = get_current_time_in_ms()
+    active_hazards = filter_hazards(active_hazards, current_time_in_ms)
     print(f'Active hazards (after filtering): {len(active_hazards)}')
 
+    # TODO use current_time_in_ms
     end = get_end_datetime_str(get_now())
     process_active_hazards(hyp3, active_hazards, end)

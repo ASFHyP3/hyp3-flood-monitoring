@@ -14,6 +14,7 @@ MOCK_ENV = {
 }
 
 
+@patch('hyp3_floods.get_current_time_in_ms')
 @patch('hyp3_floods.get_now')
 @patch('hyp3_floods.process_active_hazard')
 @patch('hyp3_floods.get_active_hazards')
@@ -24,19 +25,22 @@ def test_lambda_handler(
         mock_get_active_hazards: MagicMock,
         mock_process_active_hazard: MagicMock,
         mock_get_now: MagicMock,
+        mock_get_current_time_in_ms: MagicMock,
         ):
     mock_hyp3_api = NonCallableMock()
     mock_hyp3_api_class.return_value = mock_hyp3_api
 
     mock_get_active_hazards.return_value = [
-        {'uuid': '1', 'type_ID': 'FLOOD'},
-        {'uuid': '2', 'type_ID': 'foo'},
-        {'uuid': '3', 'type_ID': 'FLOOD'},
-        {'uuid': '4', 'type_ID': 'bar'},
+        {'uuid': '1', 'type_ID': 'FLOOD', 'start_Date': 1},
+        {'uuid': '2', 'type_ID': 'foo', 'start_Date': 1},
+        {'uuid': '3', 'type_ID': 'FLOOD', 'start_Date': 1},
+        {'uuid': '4', 'type_ID': 'bar', 'start_Date': 1},
     ]
 
     now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
     mock_get_now.return_value = now
+
+    mock_get_current_time_in_ms.return_value = 3
 
     hyp3_floods.lambda_handler(None, None)
 
@@ -46,8 +50,8 @@ def test_lambda_handler(
 
     end = '2022-05-27T23:14:34Z'
     assert mock_process_active_hazard.mock_calls == [
-        call(mock_hyp3_api, {'uuid': '1', 'type_ID': 'FLOOD'}, end),
-        call(mock_hyp3_api, {'uuid': '3', 'type_ID': 'FLOOD'}, end),
+        call(mock_hyp3_api, {'uuid': '1', 'type_ID': 'FLOOD', 'start_Date': 1}, end),
+        call(mock_hyp3_api, {'uuid': '3', 'type_ID': 'FLOOD', 'start_Date': 1}, end),
     ]
 
 
