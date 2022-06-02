@@ -213,8 +213,11 @@ def test_get_start_datetime_str():
 
 
 def test_get_end_datetime_str():
-    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
-    assert hyp3_floods.get_end_datetime_str(now) == '2022-05-27T23:14:34Z'
+    current_time_in_ms = 1653658144647
+    assert hyp3_floods.get_end_datetime_str(current_time_in_ms, timedelta(0)) == '2022-05-27T13:29:04Z'
+    assert hyp3_floods.get_end_datetime_str(current_time_in_ms, timedelta(hours=1)) == '2022-05-27T14:29:04Z'
+    assert hyp3_floods.get_end_datetime_str(current_time_in_ms, timedelta(hours=2)) == '2022-05-27T15:29:04Z'
+    assert hyp3_floods.get_end_datetime_str(current_time_in_ms) == '2022-05-27T16:29:04Z'
 
 
 def test_subscription_name_from_hazard_uuid():

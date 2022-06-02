@@ -140,9 +140,8 @@ def get_start_datetime_str(timestamp_in_ms: int, delta=timedelta(days=1)) -> str
     return str_from_datetime(datetime.fromtimestamp(timestamp_in_ms // 1000, tz=timezone.utc) - delta)
 
 
-def get_end_datetime_str(now: datetime) -> str:
-    end = now + timedelta(hours=3) - timedelta(microseconds=now.microsecond)
-    return str_from_datetime(end)
+def get_end_datetime_str(current_time_in_ms: int, delta=timedelta(hours=3)) -> str:
+    return str_from_datetime(datetime.fromtimestamp(current_time_in_ms // 1000, tz=timezone.utc) + delta)
 
 
 def subscription_name_from_hazard_uuid(uuid: str) -> str:
