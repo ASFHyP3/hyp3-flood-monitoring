@@ -15,7 +15,6 @@ MOCK_ENV = {
 
 
 @patch('hyp3_floods.get_current_time_in_ms')
-@patch('hyp3_floods.get_now')
 @patch('hyp3_floods.process_active_hazard')
 @patch('hyp3_floods.get_active_hazards')
 @patch('hyp3_floods.HyP3SubscriptionsAPI')
@@ -24,36 +23,33 @@ def test_lambda_handler(
         mock_hyp3_api_class: MagicMock,
         mock_get_active_hazards: MagicMock,
         mock_process_active_hazard: MagicMock,
-        mock_get_now: MagicMock,
         mock_get_current_time_in_ms: MagicMock,
         ):
     mock_hyp3_api = NonCallableMock()
     mock_hyp3_api_class.return_value = mock_hyp3_api
 
-    mock_get_active_hazards.return_value = [
-        {'uuid': '1', 'type_ID': 'FLOOD', 'start_Date': 1},
-        {'uuid': '2', 'type_ID': 'foo', 'start_Date': 1},
-        {'uuid': '3', 'type_ID': 'FLOOD', 'start_Date': 2},
-        {'uuid': '4', 'type_ID': 'bar', 'start_Date': 2},
-        {'uuid': '5', 'type_ID': 'FLOOD', 'start_Date': 3},
-        {'uuid': '6', 'type_ID': 'baz', 'start_Date': 3},
+    active_hazards = [
+        {'uuid': '0', 'type_ID': 'FLOOD', 'start_Date': 1653658144630},
+        {'uuid': '1', 'type_ID': 'foo', 'start_Date': 1653658144630},
+        {'uuid': '2', 'type_ID': 'FLOOD', 'start_Date': 1653658144640},
+        {'uuid': '3', 'type_ID': 'bar', 'start_Date': 1653658144640},
+        {'uuid': '4', 'type_ID': 'FLOOD', 'start_Date': 1653658144650},
+        {'uuid': '5', 'type_ID': 'baz', 'start_Date': 1653658144650},
     ]
+    mock_get_active_hazards.return_value = active_hazards
 
-    now = datetime(year=2022, month=5, day=27, hour=20, minute=14, second=34, microsecond=918420, tzinfo=timezone.utc)
-    mock_get_now.return_value = now
-
-    mock_get_current_time_in_ms.return_value = 2
+    mock_get_current_time_in_ms.return_value = 1653658144647
 
     hyp3_floods.lambda_handler(None, None)
 
     mock_hyp3_api_class.assert_called_once_with(hyp3_floods.HYP3_URL_TEST, 'test-user', 'test-pass')
     mock_get_active_hazards.assert_called_once_with('test-token')
-    mock_get_now.assert_called_once_with()
+    mock_get_current_time_in_ms.assert_called_once_with()
 
-    end = '2022-05-27T23:14:34Z'
+    end = '2022-05-27T16:29:04Z'
     assert mock_process_active_hazard.mock_calls == [
-        call(mock_hyp3_api, {'uuid': '1', 'type_ID': 'FLOOD', 'start_Date': 1}, end),
-        call(mock_hyp3_api, {'uuid': '3', 'type_ID': 'FLOOD', 'start_Date': 2}, end),
+        call(mock_hyp3_api, active_hazards[0], end),
+        call(mock_hyp3_api, active_hazards[2], end),
     ]
 
 
