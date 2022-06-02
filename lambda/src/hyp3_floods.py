@@ -66,8 +66,12 @@ def get_active_hazards(auth_token: str) -> list[dict]:
 
 
 def filter_hazards(hazards: list[dict]) -> list[dict]:
+    return list(filter(is_valid_hazard, hazards))
+
+
+def is_valid_hazard(hazard: dict) -> bool:
     # TODO should we include other hazard types?
-    return [hazard for hazard in hazards if hazard['type_ID'] == 'FLOOD']
+    return hazard['type_ID'] == 'FLOOD'
 
 
 def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional[dict]:
