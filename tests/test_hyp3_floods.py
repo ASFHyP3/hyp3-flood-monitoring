@@ -110,13 +110,14 @@ def test_process_active_hazard_update():
         'subscriptions': [
             {
                 'subscription_id': '789',
-                'search_parameters': {'intersectsWith': 'POINT(47.94 38.39)'}
+                'search_parameters': {'start': '', 'intersectsWith': 'POINT(47.94 38.39)'}
             }
         ]
     }
 
     hazard = {
         'uuid': '123',
+        'start_Date': '1',
         'latitude': 38.39,
         'longitude': 47.94
     }
@@ -148,13 +149,14 @@ def test_process_active_hazard_outdated_aoi():
         'subscriptions': [
             {
                 'subscription_id': '789',
-                'search_parameters': {'intersectsWith': 'POINT(47.94 35.39)'}
+                'search_parameters': {'start': '', 'intersectsWith': 'POINT(47.94 35.39)'}
             }
         ]
     }
 
     hazard = {
         'uuid': '123',
+        'start_Date': '1',
         'latitude': 38.39,
         'longitude': 47.94
     }

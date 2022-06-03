@@ -97,20 +97,31 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
     print(f'Fetching existing subscription with name: {name}')
     existing_subscription = get_existing_subscription(hyp3, name)
 
+    start = get_start_datetime_str(int(hazard['start_Date']))
     aoi = get_aoi(hazard)
 
     if existing_subscription:
+        compare_start_datetime(existing_subscription, start)
         compare_aoi(existing_subscription, aoi)
         subscription_id = existing_subscription['subscription_id']
         print(f'Updating subscription with id: {subscription_id}')
         hyp3.update_subscription(subscription_id, end)
     else:
         print('No existing subscription; submitting new subscription')
-        start = get_start_datetime_str(int(hazard['start_Date']))
         new_subscription = get_hyp3_subscription(start, end, aoi, name)
         response = hyp3.submit_subscription(new_subscription)
         subscription_id = response['subscription']['subscription_id']
         print(f'Got subscription id: {subscription_id}')
+
+
+def compare_start_datetime(existing_subscription: dict, new_start: str) -> None:
+    subscription_id = existing_subscription['subscription_id']
+    existing_start = existing_subscription['search_parameters']['start']
+    if existing_start != new_start:
+        print(
+            f'Warning: subscription with id {subscription_id} has start datetime {existing_start} but the current start'
+            f' datetime is {new_start}. This indicates that we need to implement a way to update start datetime.'
+        )
 
 
 def compare_aoi(existing_subscription: dict, new_aoi: str) -> None:
