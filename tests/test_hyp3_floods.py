@@ -135,7 +135,7 @@ def test_process_active_hazard_duplicate_subscription_names():
         'subscriptions': [{'subscription_id': 'foo'}, {'subscription_id': 'bar'}]
     }
 
-    hazard = {'uuid': '123'}
+    hazard = {'uuid': '123', 'start_Date': '1', 'latitude': '', 'longitude': ''}
 
     with pytest.raises(hyp3_floods.DuplicateSubscriptionNames):
         hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime')

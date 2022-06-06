@@ -94,24 +94,24 @@ def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict
 
 def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) -> None:
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
-    print(f'Fetching existing subscription with name: {name}')
-    existing_subscription = get_existing_subscription(hyp3, name)
-
     start = get_start_datetime_str(int(hazard['start_Date']))
     aoi = get_aoi(hazard)
 
-    if existing_subscription:
-        compare_start_datetime(existing_subscription, start)
-        compare_aoi(existing_subscription, aoi)
-        subscription_id = existing_subscription['subscription_id']
-        print(f'Updating subscription with id: {subscription_id}')
-        hyp3.update_subscription(subscription_id, end)
-    else:
+    print(f'Fetching existing subscription with name: {name}')
+    existing_subscription = get_existing_subscription(hyp3, name)
+
+    if not existing_subscription:
         print('No existing subscription; submitting new subscription')
         new_subscription = get_hyp3_subscription(start, end, aoi, name)
         response = hyp3.submit_subscription(new_subscription)
         subscription_id = response['subscription']['subscription_id']
         print(f'Got subscription id: {subscription_id}')
+    else:
+        compare_start_datetime(existing_subscription, start)
+        compare_aoi(existing_subscription, aoi)
+        subscription_id = existing_subscription['subscription_id']
+        print(f'Updating subscription with id: {subscription_id}')
+        hyp3.update_subscription(subscription_id, end)
 
 
 def compare_start_datetime(existing_subscription: dict, new_start: str) -> None:
