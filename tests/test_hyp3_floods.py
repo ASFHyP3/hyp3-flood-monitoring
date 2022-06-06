@@ -149,7 +149,7 @@ def test_process_active_hazard_outdated_aoi():
         'subscriptions': [
             {
                 'subscription_id': '789',
-                'search_parameters': {'start': '', 'intersectsWith': 'POINT(47.94 35.39)'}
+                'search_parameters': {'start': '', 'intersectsWith': 'POINT(1.0 1.0)'}
             }
         ]
     }
@@ -157,8 +157,8 @@ def test_process_active_hazard_outdated_aoi():
     hazard = {
         'uuid': '123',
         'start_Date': '1',
-        'latitude': 38.39,
-        'longitude': 47.94
+        'latitude': 0.0,
+        'longitude': 0.0
     }
 
     with pytest.raises(hyp3_floods.OutdatedAOI):
@@ -176,20 +176,20 @@ def test_filter_hazards():
         {'uuid': 4, 'type_ID': 'FLOOD', 'start_Date': 3},
         {'uuid': 5, 'type_ID': 'baz', 'start_Date': 3},
     ]
-    assert hyp3_floods.filter_hazards(hazards, 0) == []
-    assert hyp3_floods.filter_hazards(hazards, 1) == [hazards[0]]
-    assert hyp3_floods.filter_hazards(hazards, 2) == [hazards[0], hazards[2]]
-    assert hyp3_floods.filter_hazards(hazards, 3) == [hazards[0], hazards[2], hazards[4]]
+    assert hyp3_floods.filter_hazards(hazards, current_time_in_ms=0) == []
+    assert hyp3_floods.filter_hazards(hazards, current_time_in_ms=1) == [hazards[0]]
+    assert hyp3_floods.filter_hazards(hazards, current_time_in_ms=2) == [hazards[0], hazards[2]]
+    assert hyp3_floods.filter_hazards(hazards, current_time_in_ms=3) == [hazards[0], hazards[2], hazards[4]]
 
 
 def test_is_valid_hazard():
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 1}, 2) is True
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 2}, 2) is True
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 3}, 2) is False
+    assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 1}, current_time_in_ms=2) is True
+    assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 2}, current_time_in_ms=2) is True
+    assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 3}, current_time_in_ms=2) is False
 
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 1}, 2) is False
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 2}, 2) is False
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 3}, 2) is False
+    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 1}, current_time_in_ms=2) is False
+    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 2}, current_time_in_ms=2) is False
+    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 3}, current_time_in_ms=2) is False
 
 
 def test_get_aoi():
