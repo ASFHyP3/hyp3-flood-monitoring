@@ -225,20 +225,15 @@ def test_subscription_name_from_hazard_uuid():
 
 
 def test_prepare_new_subscription():
-    start = 'test-start-datetime'
-    end = 'test-end-datetime'
-    aoi = 'test-aoi'
-    name = 'test-subscription-name'
-
-    expected_subscription = {
+    expected = {
         'search_parameters': {
             'platform': 'S1',
             'processingLevel': 'SLC',
             'beamMode': ['IW'],
             'polarization': ['VV+VH'],
-            'start': start,
-            'end': end,
-            'intersectsWith': aoi
+            'start': 'test-start-datetime',
+            'end': 'test-end-datetime',
+            'intersectsWith': 'test-aoi'
         },
         'job_specification': {
             'job_type': 'WATER_MAP',
@@ -251,8 +246,10 @@ def test_prepare_new_subscription():
                 'hand_fraction': 0.8,
                 'membership_threshold': 0.45
             },
-            'name': name
+            'name': 'test-subscription-name'
         }
     }
-
-    assert hyp3_floods.prepare_new_subscription(start, end, aoi, name) == expected_subscription
+    actual = hyp3_floods.prepare_new_subscription(
+        'test-start-datetime', 'test-end-datetime', 'test-aoi', 'test-subscription-name'
+    )
+    assert actual == expected
