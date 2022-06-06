@@ -224,7 +224,7 @@ def test_subscription_name_from_hazard_uuid():
     assert hyp3_floods.subscription_name_from_hazard_uuid(uuid) == expected_name
 
 
-def test_get_hyp3_subscription():
+def test_prepare_new_subscription():
     start = 'test-start-datetime'
     end = 'test-end-datetime'
     aoi = 'test-aoi'
@@ -255,4 +255,4 @@ def test_get_hyp3_subscription():
         }
     }
 
-    assert hyp3_floods.get_hyp3_subscription(start, end, aoi, name) == expected_subscription
+    assert hyp3_floods.prepare_new_subscription(start, end, aoi, name) == expected_subscription

@@ -102,7 +102,7 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
 
     if not existing_subscription:
         print('No existing subscription; submitting new subscription')
-        new_subscription = get_hyp3_subscription(start, end, aoi, name)
+        new_subscription = prepare_new_subscription(start, end, aoi, name)
         response = hyp3.submit_subscription(new_subscription)
         subscription_id = response['subscription']['subscription_id']
         print(f'Got subscription id: {subscription_id}')
@@ -159,7 +159,7 @@ def subscription_name_from_hazard_uuid(uuid: str) -> str:
     return f'PDC-hazard-{uuid}'
 
 
-def get_hyp3_subscription(start: str, end: str, aoi: str, name: str) -> dict:
+def prepare_new_subscription(start: str, end: str, aoi: str, name: str) -> dict:
     # Adapted from:
     # https://github.com/ASFHyP3/hyp3-nasa-disasters/blob/main/data_management/pdc_brazil.json
     return {
