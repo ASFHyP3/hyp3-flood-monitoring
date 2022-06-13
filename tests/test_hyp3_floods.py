@@ -202,12 +202,50 @@ def test_str_from_datetime():
     assert hyp3_floods.str_from_datetime(date_time) == '2021-12-10T21:09:03Z'
 
 
-def test_get_start_datetime_str():
+def test_get_start_datetime_str_delta():
     timestamp = 1639170543789
-    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(0)) == '2021-12-10T21:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(hours=1)) == '2021-12-10T20:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp, timedelta(hours=2)) == '2021-12-10T19:09:03Z'
-    assert hyp3_floods.get_start_datetime_str(timestamp) == '2021-12-10T20:09:03Z'
+    minimum = datetime(2020, 1, 1, tzinfo=timezone.utc)
+    assert hyp3_floods.get_start_datetime_str(timestamp, delta=timedelta(0), minimum=minimum) == \
+           '2021-12-10T21:09:03Z'
+    assert hyp3_floods.get_start_datetime_str(timestamp, delta=timedelta(hours=1), minimum=minimum) == \
+           '2021-12-10T20:09:03Z'
+    assert hyp3_floods.get_start_datetime_str(timestamp, delta=timedelta(hours=2), minimum=minimum) == \
+           '2021-12-10T19:09:03Z'
+    assert hyp3_floods.get_start_datetime_str(timestamp, minimum=minimum) == \
+           '2021-12-10T20:09:03Z'
+
+
+def test_get_start_datetime_str_minimum():
+    timestamp = 1640995200000
+
+    assert hyp3_floods.get_start_datetime_str(
+        timestamp,
+        delta=timedelta(0),
+        minimum=datetime(2022, 1, 1, tzinfo=timezone.utc)
+    ) == '2022-01-01T00:00:00Z'
+
+    assert hyp3_floods.get_start_datetime_str(
+        timestamp - 3_600_000,
+        delta=timedelta(0),
+        minimum=datetime(2022, 1, 1, tzinfo=timezone.utc)
+    ) == '2022-01-01T00:00:00Z'
+
+    assert hyp3_floods.get_start_datetime_str(
+        timestamp,
+        delta=timedelta(hours=1),
+        minimum=datetime(2022, 1, 1, tzinfo=timezone.utc)
+    ) == '2022-01-01T00:00:00Z'
+
+    assert hyp3_floods.get_start_datetime_str(
+        timestamp,
+        delta=timedelta(0),
+        minimum=datetime(2022, 6, 15, tzinfo=timezone.utc)
+    ) == '2022-06-15T00:00:00Z'
+
+    assert hyp3_floods.get_start_datetime_str(
+        1,
+        delta=timedelta(0)
+    ) == '2022-01-01T00:00:00Z'
 
 
 def test_get_end_datetime_str():
