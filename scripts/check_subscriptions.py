@@ -1,18 +1,11 @@
 import time
 
 import boto3
-import requests
 
 import hyp3_floods
+import _util
 
 LOG_GROUP = '/aws/lambda/hyp3-flood-monitoring-test-Lambda-XUnL4S4ZZ2Cn'
-
-
-def get_subscriptions(session: requests.Session) -> dict:
-    url = f'{hyp3_floods.HYP3_URL_TEST}/subscriptions'
-    response = session.get(url)
-    response.raise_for_status()
-    return response.json()
 
 
 def get_query_results(client, **kwargs) -> dict:
@@ -74,7 +67,7 @@ def main() -> None:
     earthdata_password = hyp3_floods.get_env_var('EARTHDATA_PASSWORD')
 
     session = hyp3_floods.HyP3SubscriptionsAPI._get_hyp3_api_session(earthdata_username, earthdata_password)
-    subscriptions = get_subscriptions(session)['subscriptions']
+    subscriptions = _util.get_subscriptions(session)['subscriptions']
 
     client = boto3.client('logs')
 
