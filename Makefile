@@ -29,3 +29,8 @@ check-subscriptions:
 	ENV_VARS=$$(xargs < $(lambda_env)) && \
 	export $$ENV_VARS && \
 	AWS_PROFILE=hyp3 python scripts/check_subscriptions.py
+
+get-stats:
+	ENV_VARS=$$(xargs < $(lambda_env)) && \
+	export $$ENV_VARS && \
+	python scripts/get_stats.py
