@@ -38,7 +38,7 @@ def get_expected_subscriptions_count(client) -> int:
     return count
 
 
-def get_active_hazards_count(client) -> tuple[str, str]:
+def get_active_hazards_count(client) -> tuple[str, int]:
     fields = get_query_results(
         client,
         logGroupName=LOG_GROUP,
@@ -53,9 +53,12 @@ def get_active_hazards_count(client) -> tuple[str, str]:
     timestamp = fields[0]['value']
 
     assert fields[1]['field'] == '@message'
-    message = fields[1]['value']
+    message = fields[1]['value'].strip().split(':')
 
-    return timestamp, message.strip()
+    assert message[0] == 'Active hazards (after filtering)'
+    count = int(message[1])
+
+    return timestamp, count
 
 
 def count_updated_subscriptions(subscriptions: list[dict]) -> tuple[str, int]:
@@ -75,17 +78,17 @@ def main() -> None:
 
     client = boto3.client('logs')
 
-    print(f'Expected subscriptions count: {get_expected_subscriptions_count(client)}')
-    print(f'Actual subscriptions count: {len(subscriptions)}\n')
+    print(f'Total subscriptions (from logs):     {get_expected_subscriptions_count(client)}')
+    print(f'Total subscriptions (from HyP3 API): {len(subscriptions)}\n')
 
-    active_hazards_timestamp, active_hazards_message = get_active_hazards_count(client)
+    active_hazards_timestamp, active_hazards_count = get_active_hazards_count(client)
     updated_subscriptions_end, updated_subscriptions_count = count_updated_subscriptions(subscriptions)
 
-    print(active_hazards_message)
-    print(f'Up-to-date subscriptions: {updated_subscriptions_count}\n')
+    print(f'Active hazards (from logs):               {active_hazards_count}')
+    print(f'Up-to-date subscriptions (from HyP3 API): {updated_subscriptions_count}\n')
 
-    print(f'Active hazards count timestamp: {active_hazards_timestamp}')
-    print(f'Current subscriptions end: {updated_subscriptions_end}')
+    print(f'Active hazards log timestamp:          {active_hazards_timestamp}')
+    print(f'Up-to-date subscriptions end datetime: {updated_subscriptions_end}')
 
 
 if __name__ == '__main__':
