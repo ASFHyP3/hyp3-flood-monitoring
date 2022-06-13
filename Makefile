@@ -24,3 +24,8 @@ flake8:
 
 cfn-lint:
 	cfn-lint lambda/cloudformation.yml --info --ignore-checks W3002
+
+check-subscriptions:
+	ENV_VARS=$$(xargs < $(lambda_env)) && \
+	export $$ENV_VARS && \
+	AWS_PROFILE=hyp3 python scripts/check_subscriptions.py

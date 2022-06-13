@@ -1,4 +1,5 @@
 -r lambda/requirements.txt
+boto3
 cfn-lint
 flake8
 pytest
