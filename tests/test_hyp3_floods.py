@@ -221,7 +221,7 @@ def test_get_start_datetime_str_minimum():
     assert hyp3_floods.get_start_datetime_str(
         timestamp,
         delta=timedelta(0),
-        minimum=datetime(2021, 1, 1, tzinfo=timezone.utc)
+        minimum=datetime(1, 1, 1, tzinfo=timezone.utc)
     ) == '2022-01-01T00:00:00Z'
 
     assert hyp3_floods.get_start_datetime_str(
