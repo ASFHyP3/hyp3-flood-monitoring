@@ -5,6 +5,8 @@ import requests
 
 import hyp3_floods
 
+LOG_GROUP = '/aws/lambda/hyp3-flood-monitoring-test-Lambda-XUnL4S4ZZ2Cn'
+
 
 def get_subscriptions(session: requests.Session) -> dict:
     url = f'{hyp3_floods.HYP3_URL_TEST}/subscriptions'
@@ -25,7 +27,7 @@ def get_query_results(client, **kwargs) -> dict:
 def get_expected_subscriptions_count(client) -> int:
     results = get_query_results(
         client,
-        logGroupName='/aws/lambda/hyp3-flood-monitoring-test-Lambda-XUnL4S4ZZ2Cn',
+        logGroupName=LOG_GROUP,
         startTime=0,
         endTime=int(time.time() + 3600),
         queryString='fields @message | filter @message like /Got subscription id/ | stats count()'
@@ -36,6 +38,34 @@ def get_expected_subscriptions_count(client) -> int:
     return count
 
 
+def get_active_hazards_count(client) -> tuple[str, str]:
+    fields = get_query_results(
+        client,
+        logGroupName=LOG_GROUP,
+        startTime=int(time.time() - 3600),
+        endTime=int(time.time() + 3600),
+        queryString=(
+            'fields @timestamp, @message | sort @timestamp desc | limit 1 | filter @message like /after filtering/'
+        )
+    )['results'][0]
+
+    assert fields[0]['field'] == '@timestamp'
+    timestamp = fields[0]['value']
+
+    assert fields[1]['field'] == '@message'
+    message = fields[1]['value']
+
+    return timestamp, message.strip()
+
+
+def count_updated_subscriptions(subscriptions: list[dict]) -> tuple[str, int]:
+    current_end = max(subscription['search_parameters']['end'] for subscription in subscriptions)
+    return (
+        current_end,
+        sum(1 for subscription in subscriptions if subscription['search_parameters']['end'] == current_end)
+    )
+
+
 def main() -> None:
     earthdata_username = hyp3_floods.get_env_var('EARTHDATA_USERNAME')
     earthdata_password = hyp3_floods.get_env_var('EARTHDATA_PASSWORD')
@@ -44,8 +74,18 @@ def main() -> None:
     subscriptions = get_subscriptions(session)['subscriptions']
 
     client = boto3.client('logs')
+
     print(f'Expected subscriptions count: {get_expected_subscriptions_count(client)}')
-    print(f'Actual subscriptions count: {len(subscriptions)}')
+    print(f'Actual subscriptions count: {len(subscriptions)}\n')
+
+    active_hazards_timestamp, active_hazards_message = get_active_hazards_count(client)
+    updated_subscriptions_end, updated_subscriptions_count = count_updated_subscriptions(subscriptions)
+
+    print(active_hazards_message)
+    print(f'Up-to-date subscriptions: {updated_subscriptions_count}\n')
+
+    print(f'Active hazards count timestamp: {active_hazards_timestamp}')
+    print(f'Current subscriptions end: {updated_subscriptions_end}')
 
 
 if __name__ == '__main__':
