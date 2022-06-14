@@ -6,9 +6,9 @@ from hyp3_floods import HYP3_URL_TEST
 # TODO handle pagination
 
 
-def get_jobs(session: requests.Session) -> dict:
+def get_jobs(session: requests.Session, start: str) -> dict:
     url = f'{HYP3_URL_TEST}/jobs'
-    response = session.get(url)
+    response = session.get(url, params={'start': start})
     response.raise_for_status()
     return response.json()
 
