@@ -20,10 +20,6 @@ class DuplicateSubscriptionNames(Exception):
     pass
 
 
-class OutdatedAOI(Exception):
-    pass
-
-
 class HyP3SubscriptionsAPI:
 
     def __init__(self, api_url: str, username: str, password: str):
@@ -52,9 +48,9 @@ class HyP3SubscriptionsAPI:
         response.raise_for_status()
         return response.json()
 
-    def update_subscription(self, subscription_id: str, end: str) -> dict:
+    def update_subscription(self, subscription_id: str, **kwargs) -> dict:
         url = f'{self._url}/subscriptions/{subscription_id}'
-        response = self._session.patch(url, json={'enabled': True, 'end': end})
+        response = self._session.patch(url, json=kwargs)
         response.raise_for_status()
         return response.json()
 
@@ -88,7 +84,7 @@ def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict
         print(f'({count}/{len(active_hazards)}) Processing hazard {hazard["uuid"]}')
         try:
             process_active_hazard(hyp3, hazard, end)
-        except (requests.HTTPError, DuplicateSubscriptionNames, OutdatedAOI) as e:
+        except (requests.HTTPError, DuplicateSubscriptionNames) as e:
             print(f'Error while processing hazard: {e}')
 
 
@@ -108,12 +104,12 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
         print(f'Got subscription id: {subscription_id}')
     else:
         compare_start_datetime(existing_subscription, start)
-        compare_aoi(existing_subscription, aoi)
         subscription_id = existing_subscription['subscription_id']
         print(f'Updating subscription with id: {subscription_id}')
-        hyp3.update_subscription(subscription_id, end)
+        hyp3.update_subscription(subscription_id, start=start, end=end, intersectsWith=aoi, enabled=True)
 
 
+# TODO log start and aoi differences
 def compare_start_datetime(existing_subscription: dict, new_start: str) -> None:
     existing_start = existing_subscription['search_parameters']['start']
     if existing_start != new_start:
@@ -121,16 +117,6 @@ def compare_start_datetime(existing_subscription: dict, new_start: str) -> None:
         print(
             f'Warning: subscription with id {subscription_id} has start datetime {existing_start} but the current start'
             f' datetime is {new_start}. This indicates that we need to implement a way to update start datetime.'
-        )
-
-
-def compare_aoi(existing_subscription: dict, new_aoi: str) -> None:
-    existing_aoi = existing_subscription['search_parameters']['intersectsWith']
-    if existing_aoi != new_aoi:
-        subscription_id = existing_subscription['subscription_id']
-        raise OutdatedAOI(
-            f'Subscription with id {subscription_id} has AOI {existing_aoi} but the current AOI is {new_aoi}.'
-            ' This indicates that we need to implement a way to update subscription AOI.'
         )
 
 
