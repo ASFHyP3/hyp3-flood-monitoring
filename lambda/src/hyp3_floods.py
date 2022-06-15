@@ -105,11 +105,11 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
     else:
         log_updates(existing_subscription, start, aoi)
         hyp3.update_subscription(
-            existing_subscription['subscription_id'],
+            subscription_id=existing_subscription['subscription_id'],
             start=start,
             end=end,
             intersectsWith=aoi,
-            enabled=True
+            enabled=True,
         )
 
 

@@ -131,7 +131,7 @@ def test_process_active_hazard_update(mock_print: MagicMock):
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
     mock_hyp3.update_subscription.assert_called_once_with(
-        'test-subscription-id',
+        subscription_id='test-subscription-id',
         start='2022-06-14T23:00:00Z',
         end='test-end-datetime',
         intersectsWith='POINT(2.0 1.0)',
