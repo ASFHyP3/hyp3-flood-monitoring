@@ -125,16 +125,15 @@ def test_process_active_hazard_update(mock_print: MagicMock):
         'latitude': 1.0,
         'longitude': 2.0,
     }
-    end = 'test-end-datetime'
 
-    hyp3_floods.process_active_hazard(mock_hyp3, hazard, end)
+    hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime')
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
     mock_hyp3.update_subscription.assert_called_once_with(
         'test-subscription-id',
         start='2022-06-14T23:00:00Z',
-        end=end,
+        end='test-end-datetime',
         intersectsWith='POINT(2.0 1.0)',
         enabled=True,
     )
