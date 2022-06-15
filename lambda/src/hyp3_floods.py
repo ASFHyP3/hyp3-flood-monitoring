@@ -88,6 +88,7 @@ def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict
             print(f'Error while processing hazard: {e}')
 
 
+# TODO add ids to log lines where useful
 def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) -> None:
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
     start = get_start_datetime_str(int(hazard['start_Date']))
@@ -103,21 +104,28 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
         subscription_id = response['subscription']['subscription_id']
         print(f'Got subscription id: {subscription_id}')
     else:
-        compare_start_datetime(existing_subscription, start)
-        subscription_id = existing_subscription['subscription_id']
-        print(f'Updating subscription with id: {subscription_id}')
-        hyp3.update_subscription(subscription_id, start=start, end=end, intersectsWith=aoi, enabled=True)
-
-
-# TODO log start and aoi differences
-def compare_start_datetime(existing_subscription: dict, new_start: str) -> None:
-    existing_start = existing_subscription['search_parameters']['start']
-    if existing_start != new_start:
-        subscription_id = existing_subscription['subscription_id']
-        print(
-            f'Warning: subscription with id {subscription_id} has start datetime {existing_start} but the current start'
-            f' datetime is {new_start}. This indicates that we need to implement a way to update start datetime.'
+        log_updates(existing_subscription, start, aoi)
+        hyp3.update_subscription(
+            existing_subscription['subscription_id'],
+            start=start,
+            end=end,
+            intersectsWith=aoi,
+            enabled=True
         )
+
+
+def log_updates(existing_subscription: dict, new_start: str, new_aoi: str) -> None:
+    subscription_id = existing_subscription['subscription_id']
+    print(f'Updating subscription with id: {subscription_id}')
+
+    existing_start = existing_subscription['search_parameters']['start']
+    existing_aoi = existing_subscription['search_parameters']['intersectsWith']
+
+    if existing_start != new_start:
+        print(f'Updating start datetime for subscription {subscription_id} from {existing_start} to {new_start}')
+
+    if existing_aoi != new_aoi:
+        print(f'Updating AOI for subscription {subscription_id} from {existing_aoi} to {new_aoi}')
 
 
 def get_aoi(hazard: dict) -> str:

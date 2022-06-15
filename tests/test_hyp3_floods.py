@@ -104,8 +104,8 @@ def test_process_active_hazard_submit():
     mock_hyp3.submit_subscription.assert_called_once_with(new_subscription)
 
 
-# TODO assert differences logged
-def test_process_active_hazard_update():
+@patch('builtins.print')
+def test_process_active_hazard_update(mock_print: MagicMock):
     mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
     mock_hyp3.get_subscriptions_by_name.return_value = {
         'subscriptions': [
@@ -130,6 +130,7 @@ def test_process_active_hazard_update():
     hyp3_floods.process_active_hazard(mock_hyp3, hazard, end)
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
+
     mock_hyp3.update_subscription.assert_called_once_with(
         'test-subscription-id',
         start='2022-06-14T23:00:00Z',
@@ -137,6 +138,16 @@ def test_process_active_hazard_update():
         intersectsWith='POINT(2.0 1.0)',
         enabled=True,
     )
+
+    assert call(
+        'Updating start datetime for subscription test-subscription-id '
+        'from 2022-03-01T00:00:00Z to 2022-06-14T23:00:00Z'
+    ) in mock_print.mock_calls
+
+    assert call(
+        'Updating AOI for subscription test-subscription-id '
+        'from POINT(0.0 0.0) to POINT(2.0 1.0)'
+    ) in mock_print.mock_calls
 
 
 def test_process_active_hazard_duplicate_subscription_names():
