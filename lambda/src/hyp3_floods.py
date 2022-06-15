@@ -85,10 +85,9 @@ def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict
         try:
             process_active_hazard(hyp3, hazard, end)
         except (requests.HTTPError, DuplicateSubscriptionNames) as e:
-            print(f'Error while processing hazard: {e}')
+            print(f'Error while processing hazard {hazard["uuid"]}: {e}')
 
 
-# TODO add ids to log lines where useful
 def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) -> None:
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
     start = get_start_datetime_str(int(hazard['start_Date']))
@@ -98,7 +97,7 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
     existing_subscription = get_existing_subscription(hyp3, name)
 
     if not existing_subscription:
-        print('No existing subscription; submitting new subscription')
+        print(f'No existing subscription; submitting new subscription with name: {name}')
         new_subscription = prepare_new_subscription(start, end, aoi, name)
         response = hyp3.submit_subscription(new_subscription)
         subscription_id = response['subscription']['subscription_id']
