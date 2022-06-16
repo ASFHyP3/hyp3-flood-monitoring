@@ -20,10 +20,6 @@ class DuplicateSubscriptionNames(Exception):
     pass
 
 
-class OutdatedAOI(Exception):
-    pass
-
-
 class HyP3SubscriptionsAPI:
 
     def __init__(self, api_url: str, username: str, password: str):
@@ -52,9 +48,9 @@ class HyP3SubscriptionsAPI:
         response.raise_for_status()
         return response.json()
 
-    def update_subscription(self, subscription_id: str, end: str) -> dict:
+    def update_subscription(self, subscription_id: str, **kwargs) -> dict:
         url = f'{self._url}/subscriptions/{subscription_id}'
-        response = self._session.patch(url, json={'enabled': True, 'end': end})
+        response = self._session.patch(url, json=kwargs)
         response.raise_for_status()
         return response.json()
 
@@ -88,8 +84,8 @@ def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict
         print(f'({count}/{len(active_hazards)}) Processing hazard {hazard["uuid"]}')
         try:
             process_active_hazard(hyp3, hazard, end)
-        except (requests.HTTPError, DuplicateSubscriptionNames, OutdatedAOI) as e:
-            print(f'Error while processing hazard: {e}')
+        except (requests.HTTPError, DuplicateSubscriptionNames) as e:
+            print(f'Error while processing hazard {hazard["uuid"]}: {e}')
 
 
 def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) -> None:
@@ -101,37 +97,34 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
     existing_subscription = get_existing_subscription(hyp3, name)
 
     if not existing_subscription:
-        print('No existing subscription; submitting new subscription')
+        print(f'No existing subscription; submitting new subscription with name: {name}')
         new_subscription = prepare_new_subscription(start, end, aoi, name)
         response = hyp3.submit_subscription(new_subscription)
         subscription_id = response['subscription']['subscription_id']
         print(f'Got subscription id: {subscription_id}')
     else:
-        compare_start_datetime(existing_subscription, start)
-        compare_aoi(existing_subscription, aoi)
-        subscription_id = existing_subscription['subscription_id']
-        print(f'Updating subscription with id: {subscription_id}')
-        hyp3.update_subscription(subscription_id, end)
+        log_updates(existing_subscription, start, aoi)
+        hyp3.update_subscription(
+            subscription_id=existing_subscription['subscription_id'],
+            start=start,
+            end=end,
+            intersectsWith=aoi,
+            enabled=True,
+        )
 
 
-def compare_start_datetime(existing_subscription: dict, new_start: str) -> None:
+def log_updates(existing_subscription: dict, new_start: str, new_aoi: str) -> None:
+    subscription_id = existing_subscription['subscription_id']
+    print(f'Updating subscription with id: {subscription_id}')
+
     existing_start = existing_subscription['search_parameters']['start']
-    if existing_start != new_start:
-        subscription_id = existing_subscription['subscription_id']
-        print(
-            f'Warning: subscription with id {subscription_id} has start datetime {existing_start} but the current start'
-            f' datetime is {new_start}. This indicates that we need to implement a way to update start datetime.'
-        )
-
-
-def compare_aoi(existing_subscription: dict, new_aoi: str) -> None:
     existing_aoi = existing_subscription['search_parameters']['intersectsWith']
+
+    if existing_start != new_start:
+        print(f'Updating start datetime for subscription {subscription_id} from {existing_start} to {new_start}')
+
     if existing_aoi != new_aoi:
-        subscription_id = existing_subscription['subscription_id']
-        raise OutdatedAOI(
-            f'Subscription with id {subscription_id} has AOI {existing_aoi} but the current AOI is {new_aoi}.'
-            ' This indicates that we need to implement a way to update subscription AOI.'
-        )
+        print(f'Updating AOI for subscription {subscription_id} from {existing_aoi} to {new_aoi}')
 
 
 def get_aoi(hazard: dict) -> str:

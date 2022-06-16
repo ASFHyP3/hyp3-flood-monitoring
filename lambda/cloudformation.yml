@@ -12,7 +12,6 @@ Parameters:
     Type: String
     NoEcho: true
 
-# TODO: Add scheduled trigger for lambda
 Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup

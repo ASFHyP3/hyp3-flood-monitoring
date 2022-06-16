@@ -104,29 +104,49 @@ def test_process_active_hazard_submit():
     mock_hyp3.submit_subscription.assert_called_once_with(new_subscription)
 
 
-def test_process_active_hazard_update():
+@patch('builtins.print')
+def test_process_active_hazard_update(mock_print: MagicMock):
     mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
     mock_hyp3.get_subscriptions_by_name.return_value = {
         'subscriptions': [
             {
-                'subscription_id': '789',
-                'search_parameters': {'start': '', 'intersectsWith': 'POINT(47.94 38.39)'}
+                'subscription_id': 'test-subscription-id',
+                'search_parameters': {
+                    'start': '2022-03-01T00:00:00Z',
+                    'intersectsWith': 'POINT(0.0 0.0)',
+                }
             }
         ]
     }
 
     hazard = {
         'uuid': '123',
-        'start_Date': '1',
-        'latitude': 38.39,
-        'longitude': 47.94
+        'start_Date': '1655251200000',
+        'latitude': 1.0,
+        'longitude': 2.0,
     }
-    end = 'test-end-datetime'
 
-    hyp3_floods.process_active_hazard(mock_hyp3, hazard, end)
+    hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime')
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
-    mock_hyp3.update_subscription.assert_called_once_with('789', end)
+
+    mock_hyp3.update_subscription.assert_called_once_with(
+        subscription_id='test-subscription-id',
+        start='2022-06-14T23:00:00Z',
+        end='test-end-datetime',
+        intersectsWith='POINT(2.0 1.0)',
+        enabled=True,
+    )
+
+    assert call(
+        'Updating start datetime for subscription test-subscription-id '
+        'from 2022-03-01T00:00:00Z to 2022-06-14T23:00:00Z'
+    ) in mock_print.mock_calls
+
+    assert call(
+        'Updating AOI for subscription test-subscription-id '
+        'from POINT(0.0 0.0) to POINT(2.0 1.0)'
+    ) in mock_print.mock_calls
 
 
 def test_process_active_hazard_duplicate_subscription_names():
@@ -138,30 +158,6 @@ def test_process_active_hazard_duplicate_subscription_names():
     hazard = {'uuid': '123', 'start_Date': '1', 'latitude': '', 'longitude': ''}
 
     with pytest.raises(hyp3_floods.DuplicateSubscriptionNames):
-        hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime')
-
-    mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
-
-
-def test_process_active_hazard_outdated_aoi():
-    mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
-    mock_hyp3.get_subscriptions_by_name.return_value = {
-        'subscriptions': [
-            {
-                'subscription_id': '789',
-                'search_parameters': {'start': '', 'intersectsWith': 'POINT(1.0 1.0)'}
-            }
-        ]
-    }
-
-    hazard = {
-        'uuid': '123',
-        'start_Date': '1',
-        'latitude': 0.0,
-        'longitude': 0.0
-    }
-
-    with pytest.raises(hyp3_floods.OutdatedAOI):
         hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime')
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
