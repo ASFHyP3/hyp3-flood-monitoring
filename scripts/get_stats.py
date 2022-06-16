@@ -12,24 +12,25 @@ def get_jobless_subscriptions(subscriptions: list[dict], job_subscription_ids: f
     ]
 
 
-def write_jobless_subscription_stats(jobless_subscriptions: list[dict]) -> None:
-    rows = [('id', 'aoi', 'start', 'end', 'delta')]
-    for jobless_sub in jobless_subscriptions:
-        start = jobless_sub['search_parameters']['start']
-        end = jobless_sub['search_parameters']['end']
+def write_subscription_stats(subscriptions: list[dict], csv_path: str) -> None:
+    rows = [('id', 'name', 'aoi', 'start', 'end', 'delta')]
+    for subscription in subscriptions:
+        start = subscription['search_parameters']['start']
+        end = subscription['search_parameters']['end']
         rows.append((
-            jobless_sub['subscription_id'],
-            jobless_sub['search_parameters']['intersectsWith'],
+            subscription['subscription_id'],
+            subscription['job_specification']['name'],
+            subscription['search_parameters']['intersectsWith'],
             start,
             end,
             parse_datetime(end) - parse_datetime(start),
         ))
     csv = '\n'.join(','.join(f'"{field}"' for field in row) for row in rows)
 
-    with open('jobless-subscription-stats.csv', 'w') as f:
+    with open(csv_path, 'w') as f:
         f.write(csv)
 
-    print('Wrote jobless subscription stats')
+    print(f'Wrote {csv_path}')
 
 
 def parse_datetime(datetime_str: str) -> datetime:
@@ -59,7 +60,8 @@ def main() -> None:
 
     print(f'{len(jobless_subscriptions)} / {len(subscriptions)} subscriptions are disabled and jobless')
 
-    write_jobless_subscription_stats(jobless_subscriptions)
+    write_subscription_stats(jobless_subscriptions, 'jobless-subscription-stats.csv')
+    write_subscription_stats(subscriptions, 'subscription-stats.csv')
 
 
 if __name__ == '__main__':
