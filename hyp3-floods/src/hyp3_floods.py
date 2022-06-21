@@ -1,9 +1,11 @@
+import argparse
 import os
 import time
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import requests
+from dotenv import load_dotenv
 
 PDC_URL = 'https://sentry.pdc.org'
 
@@ -79,16 +81,16 @@ def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional
     return subscriptions[0] if subscriptions else None
 
 
-def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict], end: str) -> None:
+def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict], end: str, dry_run: bool) -> None:
     for count, hazard in enumerate(active_hazards, start=1):
         print(f'({count}/{len(active_hazards)}) Processing hazard {hazard["uuid"]}')
         try:
-            process_active_hazard(hyp3, hazard, end)
+            process_active_hazard(hyp3, hazard, end, dry_run)
         except (requests.HTTPError, DuplicateSubscriptionNames) as e:
             print(f'Error while processing hazard {hazard["uuid"]}: {e}')
 
 
-def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) -> None:
+def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str, dry_run: bool) -> None:
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
     start = get_start_datetime_str(int(hazard['start_Date']))
     aoi = get_aoi(hazard)
@@ -99,18 +101,19 @@ def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str) ->
     if not existing_subscription:
         print(f'No existing subscription; submitting new subscription with name: {name}')
         new_subscription = prepare_new_subscription(start, end, aoi, name)
-        response = hyp3.submit_subscription(new_subscription)
+        response = hyp3.submit_subscription(new_subscription, validate_only=dry_run)
         subscription_id = response['subscription']['subscription_id']
         print(f'Got subscription id: {subscription_id}')
     else:
         log_updates(existing_subscription, start, aoi)
-        hyp3.update_subscription(
-            subscription_id=existing_subscription['subscription_id'],
-            start=start,
-            end=end,
-            intersectsWith=aoi,
-            enabled=True,
-        )
+        if not dry_run:
+            hyp3.update_subscription(
+                subscription_id=existing_subscription['subscription_id'],
+                start=start,
+                end=end,
+                intersectsWith=aoi,
+                enabled=True,
+            )
 
 
 def log_updates(existing_subscription: dict, new_start: str, new_aoi: str) -> None:
@@ -201,6 +204,13 @@ def get_current_time_in_ms() -> int:
 
 
 def lambda_handler(event, context) -> None:
+    main(dry_run=False)
+
+
+def main(dry_run: bool) -> None:
+    if dry_run:
+        print('(DRY RUN)')
+
     hyp3_url = HYP3_URL_TEST
 
     print(f'PDC API URL: {PDC_URL}')
@@ -223,4 +233,14 @@ def lambda_handler(event, context) -> None:
     print(f'Active hazards (after filtering): {len(active_hazards)}')
 
     end = get_end_datetime_str(current_time_in_ms)
-    process_active_hazards(hyp3, active_hazards, end)
+    process_active_hazards(hyp3, active_hazards, end, dry_run)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dotenv_path')
+    parser.add_argument('--no-dry-run', action='store_true')
+    args = parser.parse_args()
+
+    load_dotenv(dotenv_path=args.dotenv_path)
+    main(dry_run=(not args.no_dry_run))

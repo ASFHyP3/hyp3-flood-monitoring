@@ -3,3 +3,4 @@
 cfn-lint
 flake8
 pytest
+python-dotenv
