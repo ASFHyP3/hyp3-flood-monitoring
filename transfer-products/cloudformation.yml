@@ -1,23 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Parameters:
-  PDCHazardsAuthToken:
-    Type: String
-    NoEcho: true
-
-  EarthdataUsername:
-    Type: String
-
-  EarthdataPassword:
-    Type: String
-    NoEcho: true
-
 Resources:
-  TransferProducts:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: transfer-products/cloudformation.yml
-
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -48,13 +31,8 @@ Resources:
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
-      Environment:
-        Variables:
-          PDC_HAZARDS_AUTH_TOKEN: !Ref PDCHazardsAuthToken
-          EARTHDATA_USERNAME: !Ref EarthdataUsername
-          EARTHDATA_PASSWORD: !Ref EarthdataPassword
-      Code: hyp3-floods/src/
-      Handler: hyp3_floods.lambda_handler
+      Code: transfer-products/src/
+      Handler: transfer_products.lambda_handler
       MemorySize: 128
       Role: !GetAtt Role.Arn
       Runtime: python3.9
@@ -70,7 +48,7 @@ Resources:
   Schedule:
     Type: AWS::Events::Rule
     Properties:
-      ScheduleExpression: "rate(15 minutes)"
+      ScheduleExpression: "rate(6 hours)"  # TODO decide on appropriate rate
       Targets:
         - Arn: !GetAtt Lambda.Arn
           Id: lambda

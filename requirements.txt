@@ -1,4 +1,5 @@
 -r hyp3-floods/requirements.txt
+-r transfer-products/requirements.txt
 cfn-lint
 flake8
 pytest
