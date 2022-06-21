@@ -40,7 +40,6 @@ Resources:
                   - logs:PutLogEvents
                 Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
 
-
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
