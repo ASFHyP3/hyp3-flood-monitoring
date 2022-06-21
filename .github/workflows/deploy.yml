@@ -32,7 +32,7 @@ jobs:
       - name: Package and deploy
         run: |
           aws cloudformation package \
-            --template-file hyp3-floods/cloudformation.yml \
+            --template-file cloudformation.yml \
             --s3-bucket cf-templates-aubvn3i9olmk-us-west-2 \
             --output-template-file packaged.yml
           aws cloudformation deploy \

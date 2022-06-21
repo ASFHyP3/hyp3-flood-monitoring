@@ -23,4 +23,4 @@ flake8:
 	flake8 --max-line-length=120 hyp3-floods tests
 
 cfn-lint:
-	cfn-lint hyp3-floods/cloudformation.yml --info --ignore-checks W3002
+	cfn-lint cloudformation.yml --info --ignore-checks W3002
