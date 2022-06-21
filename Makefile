@@ -1,12 +1,12 @@
-export PYTHONPATH = ${PWD}/lambda/src
+export PYTHONPATH = ${PWD}/hyp3-floods/src
 
 install:
 	python -m pip install --upgrade pip && \
 	python -m pip install -r requirements.txt
 
-install-lambda-deps:
+install-hyp3-floods-deps:
 	python -m pip install --upgrade pip && \
-	python -m pip install -r lambda/requirements.txt -t lambda/src/
+	python -m pip install -r hyp3-floods/requirements.txt -t hyp3-floods/src/
 
 lambda_env ?= env/dev.env
 run:
@@ -20,7 +20,7 @@ test:
 static: flake8 cfn-lint
 
 flake8:
-	flake8 --max-line-length=120 lambda tests
+	flake8 --max-line-length=120 hyp3-floods tests
 
 cfn-lint:
-	cfn-lint lambda/cloudformation.yml --info --ignore-checks W3002
+	cfn-lint hyp3-floods/cloudformation.yml --info --ignore-checks W3002

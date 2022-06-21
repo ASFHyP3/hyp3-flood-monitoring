@@ -28,11 +28,11 @@ jobs:
         with:
           python-version: 3.9
       - name: Install
-        run: make install-lambda-deps
+        run: make install-hyp3-floods-deps
       - name: Package and deploy
         run: |
           aws cloudformation package \
-            --template-file lambda/cloudformation.yml \
+            --template-file hyp3-floods/cloudformation.yml \
             --s3-bucket cf-templates-aubvn3i9olmk-us-west-2 \
             --output-template-file packaged.yml
           aws cloudformation deploy \

@@ -1,4 +1,4 @@
--r lambda/requirements.txt
+-r hyp3-floods/requirements.txt
 cfn-lint
 flake8
 pytest
