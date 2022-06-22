@@ -45,9 +45,7 @@ def main() -> None:
 
     subscriptions = _util.get_subscriptions(session)['subscriptions']
 
-    # start value is approximate time when rewritten lambda handler was deployed,
-    # see https://asfdaac.atlassian.net/browse/TOOL-591
-    jobs = _util.get_jobs(session, start='2022-06-07T00:30:00Z')['jobs']
+    jobs = _util.get_jobs(session)['jobs']
     print(f'Jobs: {len(jobs)}')
 
     job_subscription_ids = frozenset(job['subscription_id'] for job in jobs)
