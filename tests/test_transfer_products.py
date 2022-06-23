@@ -64,3 +64,13 @@ def test_get_objects_to_copy():
     assert transfer_products.get_objects_to_copy(
         jobs, existing_objects, 'test-target-prefix', ['.ext1', '.ext2', '.ext3']
     ) == expected_objects_to_copy
+
+
+def test_get_source_key():
+    assert transfer_products.get_source_key('test-filename.zip', '_foo.ext') == 'test-filename_foo.ext'
+
+
+def test_get_target_key():
+    assert transfer_products.get_target_key(
+        'test-job-id/test-filename.ext', 'test-name', 'test-job-id', 'test-target-prefix'
+    ) == 'test-target-prefix/test-name/test-job-id/test-filename.ext'
