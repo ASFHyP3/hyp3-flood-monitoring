@@ -1,5 +1,16 @@
 AWSTemplateFormatVersion: 2010-09-09
 
+Parameters:
+  HyP3URL:
+    Type: String
+
+  EarthdataUsername:
+    Type: String
+
+  EarthdataPassword:
+    Type: String
+    NoEcho: true
+
 Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -31,6 +42,11 @@ Resources:
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
+      Environment:
+        Variables:
+          HYP3_URL: !Ref HyP3URL
+          EARTHDATA_USERNAME: !Ref EarthdataUsername
+          EARTHDATA_PASSWORD: !Ref EarthdataPassword
       Code: transfer-products/src/
       Handler: transfer_products.lambda_handler
       MemorySize: 128

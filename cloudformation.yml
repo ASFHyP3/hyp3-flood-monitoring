@@ -5,6 +5,9 @@ Parameters:
     Type: String
     NoEcho: true
 
+  HyP3URL:
+    Type: String
+
   EarthdataUsername:
     Type: String
 
@@ -17,6 +20,10 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: transfer-products/cloudformation.yml
+      Parameters:
+        HyP3URL: !Ref HyP3URL
+        EarthdataUsername: !Ref EarthdataUsername
+        EarthdataPassword: !Ref EarthdataPassword
 
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -51,6 +58,7 @@ Resources:
       Environment:
         Variables:
           PDC_HAZARDS_AUTH_TOKEN: !Ref PDCHazardsAuthToken
+          HYP3_URL: !Ref HyP3URL
           EARTHDATA_USERNAME: !Ref EarthdataUsername
           EARTHDATA_PASSWORD: !Ref EarthdataPassword
       Code: hyp3-floods/src/

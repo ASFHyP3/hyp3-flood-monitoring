@@ -9,10 +9,6 @@ from dotenv import load_dotenv
 
 PDC_URL = 'https://sentry.pdc.org'
 
-# TODO make url configurable
-HYP3_URL_TEST = 'https://hyp3-test-api.asf.alaska.edu'
-HYP3_URL_PROD = 'https://hyp3-watermap.asf.alaska.edu'
-
 
 class MissingEnvVar(Exception):
     pass
@@ -211,15 +207,13 @@ def main(dry_run: bool) -> None:
     if dry_run:
         print('(DRY RUN)')
 
-    hyp3_url = HYP3_URL_TEST
-
-    print(f'PDC API URL: {PDC_URL}')
-    print(f'HyP3 API URL: {hyp3_url}')
-
     auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN')
+    hyp3_url = get_env_var('HYP3_URL')
     earthdata_username = get_env_var('EARTHDATA_USERNAME')
     earthdata_password = get_env_var('EARTHDATA_PASSWORD')
 
+    print(f'PDC API URL: {PDC_URL}')
+    print(f'HyP3 API URL: {hyp3_url}')
     print(f'Earthdata user: {earthdata_username}')
 
     hyp3 = HyP3SubscriptionsAPI(hyp3_url, earthdata_username, earthdata_password)
