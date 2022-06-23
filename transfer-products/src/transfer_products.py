@@ -97,7 +97,6 @@ def lambda_handler(event, context) -> None:
     main(dry_run=False)
 
 
-# TODO aws creds
 def main(dry_run: bool) -> None:
     if dry_run:
         print('(DRY RUN)')
