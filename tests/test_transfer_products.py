@@ -17,60 +17,60 @@ def test_lambda_handler_missing_env_var():
 def test_get_objects_to_copy():
     jobs = hyp3_sdk.Batch([
         hyp3_sdk.Job(
-            job_type='test-job-type',
-            job_id='test-job-0',
+            job_type='job-type',
+            job_id='job-0',
             request_time=datetime(1, 1, 1),
             status_code='SUCCEEDED',
-            user_id='test-user-id',
-            name='test-name-foo',
-            files=[{'s3': {'bucket': 'test-source-bucket', 'key': 'test-job-0/test-filename-5A87.zip'}}],
+            user_id='user-id',
+            name='name-foo',
+            files=[{'s3': {'bucket': 'source-bucket', 'key': 'job-0/filename-5A87.zip'}}],
         ),
         hyp3_sdk.Job(
-            job_type='test-job-type',
-            job_id='test-job-1',
+            job_type='job-type',
+            job_id='job-1',
             request_time=datetime(1, 1, 1),
             status_code='SUCCEEDED',
-            user_id='test-user-id',
-            name='test-name-bar',
-            files=[{'s3': {'bucket': 'test-source-bucket', 'key': 'test-job-1/test-filename-C054.zip'}}],
+            user_id='user-id',
+            name='name-bar',
+            files=[{'s3': {'bucket': 'source-bucket', 'key': 'job-1/filename-C054.zip'}}],
         ),
     ])
     existing_objects = frozenset({
-        'test-target-prefix/test-name-foo/test-job-0/test-filename-5A87.ext2',
-        'test-target-prefix/test-name-bar/test-job-1/test-filename-C054.ext1',
+        'target-prefix/name-foo/job-0/filename-5A87.ext2',
+        'target-prefix/name-bar/job-1/filename-C054.ext1',
     })
     expected_objects_to_copy = [
         transfer_products.ObjectToCopy(
-            'test-source-bucket',
-            'test-job-0/test-filename-5A87.ext1',
-            'test-target-prefix/test-name-foo/test-job-0/test-filename-5A87.ext1',
+            'source-bucket',
+            'job-0/filename-5A87.ext1',
+            'target-prefix/name-foo/job-0/filename-5A87.ext1',
         ),
         transfer_products.ObjectToCopy(
-            'test-source-bucket',
-            'test-job-0/test-filename-5A87.ext3',
-            'test-target-prefix/test-name-foo/test-job-0/test-filename-5A87.ext3',
+            'source-bucket',
+            'job-0/filename-5A87.ext3',
+            'target-prefix/name-foo/job-0/filename-5A87.ext3',
         ),
         transfer_products.ObjectToCopy(
-            'test-source-bucket',
-            'test-job-1/test-filename-C054.ext2',
-            'test-target-prefix/test-name-bar/test-job-1/test-filename-C054.ext2',
+            'source-bucket',
+            'job-1/filename-C054.ext2',
+            'target-prefix/name-bar/job-1/filename-C054.ext2',
         ),
         transfer_products.ObjectToCopy(
-            'test-source-bucket',
-            'test-job-1/test-filename-C054.ext3',
-            'test-target-prefix/test-name-bar/test-job-1/test-filename-C054.ext3',
+            'source-bucket',
+            'job-1/filename-C054.ext3',
+            'target-prefix/name-bar/job-1/filename-C054.ext3',
         ),
     ]
     assert transfer_products.get_objects_to_copy(
-        jobs, existing_objects, 'test-target-prefix', ['.ext1', '.ext2', '.ext3']
+        jobs, existing_objects, 'target-prefix', ['.ext1', '.ext2', '.ext3']
     ) == expected_objects_to_copy
 
 
 def test_get_source_key():
-    assert transfer_products.get_source_key('test-filename.zip', '_foo.ext') == 'test-filename_foo.ext'
+    assert transfer_products.get_source_key('filename.zip', '_foo.ext') == 'filename_foo.ext'
 
 
 def test_get_target_key():
     assert transfer_products.get_target_key(
-        'test-job-id/test-filename.ext', 'test-name', 'test-job-id', 'test-target-prefix'
-    ) == 'test-target-prefix/test-name/test-job-id/test-filename.ext'
+        'job-id/filename.ext', 'job-name', 'job-id', 'target-prefix'
+    ) == 'target-prefix/job-name/job-id/filename.ext'
