@@ -11,8 +11,6 @@ S3 = boto3.resource('s3')
 
 TARGET_BUCKET = 'hyp3-nasa-disasters'
 
-TARGET_PREFIX = 'PDC-test'
-
 # TODO decide on appropriate extensions
 EXTENSIONS = ['_VV.tif', '_VH.tif', '_rgb.tif', '_dem.tif', '_WM.tif', '.README.md.txt']
 
@@ -36,20 +34,24 @@ def get_jobs(hyp3: hyp3_sdk.HyP3) -> hyp3_sdk.Batch:
     return hyp3.find_jobs(status_code='SUCCEEDED')
 
 
-def get_existing_objects() -> frozenset[str]:
-    return frozenset(obj.key for obj in S3.Bucket(TARGET_BUCKET).objects.filter(Prefix=f'{TARGET_PREFIX}/'))
+def get_existing_objects(target_prefix: str) -> frozenset[str]:
+    return frozenset(obj.key for obj in S3.Bucket(TARGET_BUCKET).objects.filter(Prefix=f'{target_prefix}/'))
 
 
-def get_objects_to_copy(jobs: hyp3_sdk.Batch, existing_objects: frozenset[str]) -> list[ObjectToCopy]:
+def get_objects_to_copy(
+        jobs: hyp3_sdk.Batch,
+        existing_objects: frozenset[str],
+        target_prefix: str,
+        extensions: list[str]) -> list[ObjectToCopy]:
     objects_to_copy = []
     for job in jobs:
         assert job.succeeded()
         source_bucket: str = job.files[0]['s3']['bucket']
         zip_key: str = job.files[0]['s3']['key']
         assert zip_key.endswith('.zip')
-        for ext in EXTENSIONS:
+        for ext in extensions:
             source_key = get_source_key(zip_key, ext)
-            target_key = get_target_key(source_key, job.name, job.job_id)
+            target_key = get_target_key(source_key, job.name, job.job_id, target_prefix)
             if target_key not in existing_objects:
                 objects_to_copy.append(
                     ObjectToCopy(source_bucket=source_bucket, source_key=source_key, target_key=target_key)
@@ -61,10 +63,10 @@ def get_source_key(zip_key: str, ext: str) -> str:
     return zip_key.removesuffix('.zip') + ext
 
 
-def get_target_key(source_key: str, job_name: str, job_id: str) -> str:
+def get_target_key(source_key: str, job_name: str, job_id: str, target_prefix: str) -> str:
     source_prefix, source_basename = source_key.split('/')
     assert source_prefix == job_id
-    return '/'.join([TARGET_PREFIX, job_name, job_id, source_basename])
+    return '/'.join([target_prefix, job_name, job_id, source_basename])
 
 
 def copy_objects(objects_to_copy: list[ObjectToCopy], dry_run: bool) -> None:
@@ -101,6 +103,9 @@ def main(dry_run: bool) -> None:
     if dry_run:
         print('(DRY RUN)')
 
+    # TODO make this depend on deployment
+    target_prefix = 'PDC-test'
+
     hyp3_url = get_env_var('HYP3_URL')
     earthdata_username = get_env_var('EARTHDATA_USERNAME')
     earthdata_password = get_env_var('EARTHDATA_PASSWORD')
@@ -113,10 +118,10 @@ def main(dry_run: bool) -> None:
     jobs = get_jobs(hyp3)
     print(f'Jobs: {len(jobs)}')
 
-    existing_objects = get_existing_objects()
+    existing_objects = get_existing_objects(target_prefix)
     print(f'Existing objects: {len(existing_objects)}')
 
-    objects_to_copy = get_objects_to_copy(jobs, existing_objects)
+    objects_to_copy = get_objects_to_copy(jobs, existing_objects, target_prefix, EXTENSIONS)
     print(f'Objects to copy: {len(objects_to_copy)}')
 
     copy_objects(objects_to_copy, dry_run)
