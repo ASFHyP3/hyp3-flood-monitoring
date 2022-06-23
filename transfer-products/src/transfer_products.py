@@ -1,5 +1,6 @@
 import argparse
 import os
+from dataclasses import dataclass
 
 import boto3
 import hyp3_sdk
@@ -20,6 +21,13 @@ EXTENSIONS = ['_VV.tif', '_VH.tif', '_rgb.tif', '_dem.tif', '_WM.tif', '.README.
 # TODO tests
 
 
+@dataclass(frozen=True)
+class ObjectToCopy:
+    source_bucket: str
+    source_key: str
+    target_key: str
+
+
 class MissingEnvVar(Exception):
     pass
 
@@ -32,7 +40,7 @@ def get_existing_objects() -> frozenset[str]:
     return frozenset(obj.key for obj in S3.Bucket(TARGET_BUCKET).objects.filter(Prefix=f'{TARGET_PREFIX}/'))
 
 
-def get_objects_to_copy(jobs: hyp3_sdk.Batch, existing_objects: frozenset[str]) -> list[dict]:
+def get_objects_to_copy(jobs: hyp3_sdk.Batch, existing_objects: frozenset[str]) -> list[ObjectToCopy]:
     objects_to_copy = []
     for job in jobs:
         assert job.succeeded()
@@ -43,11 +51,9 @@ def get_objects_to_copy(jobs: hyp3_sdk.Batch, existing_objects: frozenset[str]) 
             source_key = get_source_key(zip_key, ext)
             target_key = get_target_key(source_key, job.name, job.job_id)
             if target_key not in existing_objects:
-                objects_to_copy.append({
-                    'source_bucket': source_bucket,
-                    'source_key': source_key,
-                    'target_key': target_key,
-                })
+                objects_to_copy.append(
+                    ObjectToCopy(source_bucket=source_bucket, source_key=source_key, target_key=target_key)
+                )
     return objects_to_copy
 
 
@@ -61,21 +67,21 @@ def get_target_key(source_key: str, job_name: str, job_id: str) -> str:
     return '/'.join([TARGET_PREFIX, job_name, job_id, source_basename])
 
 
-def copy_objects(objects_to_copy: list[dict], dry_run: bool) -> None:
+def copy_objects(objects_to_copy: list[ObjectToCopy], dry_run: bool) -> None:
     for count, obj in enumerate(objects_to_copy, start=1):
         print(
             f'({count}/{len(objects_to_copy)}) '
-            f'Copying {obj["source_bucket"]}/{obj["source_key"]} to {TARGET_BUCKET}/{obj["target_key"]}'
+            f'Copying {obj.source_bucket}/{obj.source_key} to {TARGET_BUCKET}/{obj.target_key}'
         )
         if not dry_run:
-            copy_object(**obj)
+            copy_object(obj)
 
 
-def copy_object(source_bucket: str, source_key: str, target_key: str) -> None:
+def copy_object(obj: ObjectToCopy) -> None:
     chunk_size = 104857600  # 100 MB
     S3.Bucket(TARGET_BUCKET).copy(
-        CopySource={'Bucket': source_bucket, 'Key': source_key},
-        Key=target_key,
+        CopySource={'Bucket': obj.source_bucket, 'Key': obj.source_key},
+        Key=obj.target_key,
         Config=TransferConfig(multipart_threshold=chunk_size, multipart_chunksize=chunk_size)
     )
 
