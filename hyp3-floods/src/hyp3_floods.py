@@ -81,7 +81,7 @@ def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict
     for count, hazard in enumerate(active_hazards, start=1):
         print(f'({count}/{len(active_hazards)}) Processing hazard {hazard["uuid"]}')
         try:
-            process_active_hazard(hyp3, hazard, end, dry_run)
+            process_active_hazard(hyp3, hazard, end, dry_run=dry_run)
         except (requests.HTTPError, DuplicateSubscriptionNames) as e:
             print(f'Error while processing hazard {hazard["uuid"]}: {e}')
 
@@ -227,7 +227,7 @@ def main(dry_run: bool) -> None:
     print(f'Active hazards (after filtering): {len(active_hazards)}')
 
     end = get_end_datetime_str(current_time_in_ms)
-    process_active_hazards(hyp3, active_hazards, end, dry_run)
+    process_active_hazards(hyp3, active_hazards, end, dry_run=dry_run)
 
 
 if __name__ == '__main__':
