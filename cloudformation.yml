@@ -15,6 +15,9 @@ Parameters:
     Type: String
     NoEcho: true
 
+  S3TargetPrefix:
+    Type: String
+
 Resources:
   TransferProducts:
     Type: AWS::CloudFormation::Stack
@@ -24,6 +27,7 @@ Resources:
         HyP3URL: !Ref HyP3URL
         EarthdataUsername: !Ref EarthdataUsername
         EarthdataPassword: !Ref EarthdataPassword
+        S3TargetPrefix: !Ref S3TargetPrefix
 
   LogGroup:
     Type: AWS::Logs::LogGroup

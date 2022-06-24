@@ -30,10 +30,6 @@ class MissingEnvVar(Exception):
     pass
 
 
-def get_jobs(hyp3: hyp3_sdk.HyP3) -> hyp3_sdk.Batch:
-    return hyp3.find_jobs(status_code='SUCCEEDED')
-
-
 def get_existing_objects(target_prefix: str) -> frozenset[str]:
     return frozenset(obj.key for obj in S3.Bucket(TARGET_BUCKET).objects.filter(Prefix=f'{target_prefix}/'))
 
@@ -103,19 +99,17 @@ def main(dry_run: bool) -> None:
     if dry_run:
         print('(DRY RUN)')
 
-    # TODO make this depend on deployment
-    target_prefix = 'PDC-test'
-
     hyp3_url = get_env_var('HYP3_URL')
     earthdata_username = get_env_var('EARTHDATA_USERNAME')
     earthdata_password = get_env_var('EARTHDATA_PASSWORD')
+    target_prefix = get_env_var('S3_TARGET_PREFIX')
 
     print(f'HyP3 API URL: {hyp3_url}')
     print(f'Earthdata user: {earthdata_username}')
 
     hyp3 = hyp3_sdk.HyP3(api_url=hyp3_url, username=earthdata_username, password=earthdata_password)
 
-    jobs = get_jobs(hyp3)
+    jobs = hyp3.find_jobs(status_code='SUCCEEDED')
     print(f'Jobs: {len(jobs)}')
 
     existing_objects = get_existing_objects(target_prefix)

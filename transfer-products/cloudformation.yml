@@ -11,6 +11,9 @@ Parameters:
     Type: String
     NoEcho: true
 
+  S3TargetPrefix:
+    Type: String
+
 Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -47,6 +50,7 @@ Resources:
           HYP3_URL: !Ref HyP3URL
           EARTHDATA_USERNAME: !Ref EarthdataUsername
           EARTHDATA_PASSWORD: !Ref EarthdataPassword
+          S3_TARGET_PREFIX: !Ref S3TargetPrefix
       Code: transfer-products/src/
       Handler: transfer_products.lambda_handler
       MemorySize: 128
