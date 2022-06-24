@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import boto3
 import hyp3_sdk
 from boto3.s3.transfer import TransferConfig
+from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 
 S3 = boto3.resource('s3')
@@ -13,10 +14,6 @@ TARGET_BUCKET = 'hyp3-nasa-disasters'
 
 # TODO decide on appropriate extensions
 EXTENSIONS = ['_VV.tif', '_VH.tif', '_rgb.tif', '_dem.tif', '_WM.tif', '.README.md.txt']
-
-# TODO handle when source key doesn't exist?
-
-# TODO tests
 
 
 @dataclass(frozen=True)
@@ -72,7 +69,10 @@ def copy_objects(objects_to_copy: list[ObjectToCopy], dry_run: bool) -> None:
             f'Copying {obj.source_bucket}/{obj.source_key} to {TARGET_BUCKET}/{obj.target_key}'
         )
         if not dry_run:
-            copy_object(obj)
+            try:
+                copy_object(obj)
+            except ClientError as e:
+                print(f'Error copying object: {e}')
 
 
 def copy_object(obj: ObjectToCopy) -> None:
