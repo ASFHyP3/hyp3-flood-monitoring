@@ -15,28 +15,26 @@ MOCK_ENV = {
     'S3_TARGET_PREFIX': 'target-prefix',
 }
 
-JOBS = hyp3_sdk.Batch(
-    [
-        hyp3_sdk.Job(
-            job_type='job-type',
-            job_id='job-0',
-            request_time=datetime(1, 1, 1),
-            status_code='SUCCEEDED',
-            user_id='user-id',
-            name='name-foo',
-            files=[{'s3': {'bucket': 'source-bucket', 'key': 'job-0/filename-5A87.zip'}}],
-        ),
-        hyp3_sdk.Job(
-            job_type='job-type',
-            job_id='job-1',
-            request_time=datetime(1, 1, 1),
-            status_code='SUCCEEDED',
-            user_id='user-id',
-            name='name-bar',
-            files=[{'s3': {'bucket': 'source-bucket', 'key': 'job-1/filename-C054.zip'}}],
-        ),
-    ]
-)
+JOBS = hyp3_sdk.Batch([
+    hyp3_sdk.Job(
+        job_type='job-type',
+        job_id='job-0',
+        request_time=datetime(1, 1, 1),
+        status_code='SUCCEEDED',
+        user_id='user-id',
+        name='name-foo',
+        files=[{'s3': {'bucket': 'source-bucket', 'key': 'job-0/filename-5A87.zip'}}],
+    ),
+    hyp3_sdk.Job(
+        job_type='job-type',
+        job_id='job-1',
+        request_time=datetime(1, 1, 1),
+        status_code='SUCCEEDED',
+        user_id='user-id',
+        name='name-bar',
+        files=[{'s3': {'bucket': 'source-bucket', 'key': 'job-1/filename-C054.zip'}}],
+    ),
+])
 
 EXISTING_OBJECTS = frozenset({
     'target-prefix/name-foo/job-0/filename-5A87.ext2',
