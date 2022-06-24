@@ -3,9 +3,10 @@ import os
 from dataclasses import dataclass
 
 import boto3
+import boto3.s3.transfer
+import botocore.exceptions
 import hyp3_sdk
-from boto3.s3.transfer import TransferConfig
-from botocore.exceptions import ClientError
+import requests
 from dotenv import load_dotenv
 
 S3 = boto3.resource('s3')
@@ -22,6 +23,9 @@ class ObjectToCopy:
     source_key: str
     target_key: str
 
+    # TODO if we migrate to an enterprise test deployment: remove this field
+    url: str
+
 
 class MissingEnvVar(Exception):
     pass
@@ -36,19 +40,30 @@ def get_objects_to_copy(
         existing_objects: frozenset[str],
         target_prefix: str,
         extensions: list[str]) -> list[ObjectToCopy]:
+
     objects_to_copy = []
     for job in jobs:
         assert job.succeeded()
         source_bucket: str = job.files[0]['s3']['bucket']
+
         zip_key: str = job.files[0]['s3']['key']
         assert zip_key.endswith('.zip')
+
+        zip_url: str = job.files[0]['url']
+        assert zip_url.endswith('.zip')
+
         for ext in extensions:
             source_key = get_source_key(zip_key, ext)
             target_key = get_target_key(source_key, job.name, job.job_id, target_prefix)
+
+            url = get_source_key(zip_url, ext)
+            assert url.endswith(source_key)
+
             if target_key not in existing_objects:
                 objects_to_copy.append(
-                    ObjectToCopy(source_bucket=source_bucket, source_key=source_key, target_key=target_key)
+                    ObjectToCopy(source_bucket=source_bucket, source_key=source_key, target_key=target_key, url=url)
                 )
+
     return objects_to_copy
 
 
@@ -69,9 +84,12 @@ def copy_objects(objects_to_copy: list[ObjectToCopy], dry_run: bool) -> None:
             f'Copying {obj.source_bucket}/{obj.source_key} to {TARGET_BUCKET}/{obj.target_key}'
         )
         if not dry_run:
+            # TODO if we migrate to an enterprise test deployment:
+            #  - call copy_object instead of transfer_object
+            #  - don't except requests.HTTPError
             try:
-                copy_object(obj)
-            except ClientError as e:
+                transfer_object(obj)
+            except (botocore.exceptions.ClientError, requests.HTTPError) as e:
                 print(f'Error copying object: {e}')
 
 
@@ -80,7 +98,32 @@ def copy_object(obj: ObjectToCopy) -> None:
     S3.Bucket(TARGET_BUCKET).copy(
         CopySource={'Bucket': obj.source_bucket, 'Key': obj.source_key},
         Key=obj.target_key,
-        Config=TransferConfig(multipart_threshold=chunk_size, multipart_chunksize=chunk_size)
+        Config=boto3.s3.transfer.TransferConfig(multipart_threshold=chunk_size, multipart_chunksize=chunk_size)
+    )
+
+
+def transfer_object(obj: ObjectToCopy) -> None:
+    path = download_object(obj.url)
+    upload_object(path, obj.target_key)
+
+
+def download_object(url: str) -> str:
+    chunk_size = 104857600  # 100 MB
+    path = f'/tmp/{url.split("/")[-1]}'
+    with requests.get(url, stream=True) as response:
+        response.raise_for_status()
+        with open(path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                f.write(chunk)
+    return path
+
+
+def upload_object(path: str, key: str) -> None:
+    chunk_size = 104857600  # 100 MB
+    S3.Bucket(TARGET_BUCKET).upload_file(
+        Filename=path,
+        Key=key,
+        Config=boto3.s3.transfer.TransferConfig(multipart_threshold=chunk_size, multipart_chunksize=chunk_size)
     )
 
 

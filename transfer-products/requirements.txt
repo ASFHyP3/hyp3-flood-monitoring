@@ -1,2 +1,4 @@
 boto3
+botocore
 hyp3-sdk
+requests
