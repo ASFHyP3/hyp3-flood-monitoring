@@ -105,6 +105,7 @@ def copy_object(obj: ObjectToCopy) -> None:
 def transfer_object(obj: ObjectToCopy) -> None:
     path = download_object(obj.url)
     upload_object(path, obj.target_key)
+    os.remove(path)
 
 
 def download_object(url: str) -> str:
