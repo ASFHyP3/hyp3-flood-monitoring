@@ -18,6 +18,8 @@ env:
   EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
   EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
 
+  S3_TARGET_BUCKET: hyp3-nasa-disasters
+
   # TODO use different prefix for prod
   S3_TARGET_PREFIX: PDC-test
 
@@ -52,4 +54,5 @@ jobs:
               HyP3URL=${HYP3_URL} \
               EarthdataUsername=${EARTHDATA_USERNAME} \
               EarthdataPassword=${EARTHDATA_PASSWORD} \
+              S3TargetBucket=${S3_TARGET_BUCKET} \
               S3TargetPrefix=${S3_TARGET_PREFIX}

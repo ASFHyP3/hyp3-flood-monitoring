@@ -12,6 +12,7 @@ MOCK_ENV = {
     'HYP3_URL': 'test-url',
     'EARTHDATA_USERNAME': 'test-user',
     'EARTHDATA_PASSWORD': 'test-pass',
+    'S3_TARGET_BUCKET': 'target-bucket',
     'S3_TARGET_PREFIX': 'target-prefix',
 }
 
@@ -95,9 +96,9 @@ def test_lambda_handler(mock_get_existing_objects: MagicMock, mock_transfer_obje
 
     mock_hyp3_class.assert_called_once_with(api_url='test-url', username='test-user', password='test-pass')
     mock_hyp3.find_jobs.assert_called_once_with(status_code='SUCCEEDED')
-    mock_get_existing_objects.assert_called_once_with('target-prefix')
+    mock_get_existing_objects.assert_called_once_with('target-bucket', 'target-prefix')
 
-    assert mock_transfer_object.mock_calls == [call(obj) for obj in EXPECTED_OBJECTS_TO_COPY]
+    assert mock_transfer_object.mock_calls == [call(obj, 'target-bucket') for obj in EXPECTED_OBJECTS_TO_COPY]
 
 
 @patch.dict(os.environ, {}, clear=True)
