@@ -15,6 +15,9 @@ Parameters:
     Type: String
     NoEcho: true
 
+  S3TargetBucket:
+    Type: String
+
   S3TargetPrefix:
     Type: String
 
@@ -27,6 +30,7 @@ Resources:
         HyP3URL: !Ref HyP3URL
         EarthdataUsername: !Ref EarthdataUsername
         EarthdataPassword: !Ref EarthdataPassword
+        S3TargetBucket: !Ref S3TargetBucket
         S3TargetPrefix: !Ref S3TargetPrefix
 
   LogGroup:
