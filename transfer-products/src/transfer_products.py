@@ -70,8 +70,7 @@ def get_source_key(zip_key: str, ext: str) -> str:
 
 
 def get_target_key(source_key: str, job_name: str, job_id: str, target_prefix: str) -> str:
-    source_prefix, source_basename = source_key.split('/')
-    assert source_prefix == job_id
+    source_basename = source_key.split('/')[-1]
     return '/'.join([target_prefix, job_name, job_id, source_basename])
 
 

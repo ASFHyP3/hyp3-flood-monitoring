@@ -119,5 +119,5 @@ def test_get_source_key():
 
 def test_get_target_key():
     assert transfer_products.get_target_key(
-        'job-id/filename.ext', 'job-name', 'job-id', 'target-prefix'
+        'path/to/filename.ext', 'job-name', 'job-id', 'target-prefix'
     ) == 'target-prefix/job-name/job-id/filename.ext'
