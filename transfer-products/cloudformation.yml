@@ -65,7 +65,6 @@ Resources:
       Role: !GetAtt Role.Arn
       Runtime: python3.9
       Timeout: 900
-      # TODO if we migrate to an enterprise test deployment: remove this property
       EphemeralStorage:
         # TODO decide on appropriate size
         Size: 10240 # MB

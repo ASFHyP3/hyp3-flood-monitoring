@@ -25,8 +25,8 @@ JOBS = hyp3_sdk.Batch([
         user_id='user-id',
         name='name-foo',
         files=[{
-            's3': {'bucket': 'source-bucket', 'key': 'job-0/filename-5A87.zip'},
-            'url': 'url-base/job-0/filename-5A87.zip'
+            'filename': 'filename-5A87.zip',
+            'url': 'url-base/path/to/filename-5A87.zip',
         }],
     ),
     hyp3_sdk.Job(
@@ -37,8 +37,8 @@ JOBS = hyp3_sdk.Batch([
         user_id='user-id',
         name='name-bar',
         files=[{
-            's3': {'bucket': 'source-bucket', 'key': 'job-1/filename-C054.zip'},
-            'url': 'url-base/job-1/filename-C054.zip'
+            'filename': 'filename-C054.zip',
+            'url': 'url-base/path/to/filename-C054.zip',
         }],
     ),
 ])
@@ -52,28 +52,20 @@ EXTENSIONS = ['.ext1', '.ext2', '.ext3']
 
 EXPECTED_OBJECTS_TO_COPY = [
     transfer_products.ObjectToCopy(
-        'source-bucket',
-        'job-0/filename-5A87.ext1',
-        'target-prefix/name-foo/job-0/filename-5A87.ext1',
-        'url-base/job-0/filename-5A87.ext1',
+        url='url-base/path/to/filename-5A87.ext1',
+        target_key='target-prefix/name-foo/job-0/filename-5A87.ext1',
     ),
     transfer_products.ObjectToCopy(
-        'source-bucket',
-        'job-0/filename-5A87.ext3',
-        'target-prefix/name-foo/job-0/filename-5A87.ext3',
-        'url-base/job-0/filename-5A87.ext3',
+        url='url-base/path/to/filename-5A87.ext3',
+        target_key='target-prefix/name-foo/job-0/filename-5A87.ext3',
     ),
     transfer_products.ObjectToCopy(
-        'source-bucket',
-        'job-1/filename-C054.ext2',
-        'target-prefix/name-bar/job-1/filename-C054.ext2',
-        'url-base/job-1/filename-C054.ext2',
+        url='url-base/path/to/filename-C054.ext2',
+        target_key='target-prefix/name-bar/job-1/filename-C054.ext2',
     ),
     transfer_products.ObjectToCopy(
-        'source-bucket',
-        'job-1/filename-C054.ext3',
-        'target-prefix/name-bar/job-1/filename-C054.ext3',
-        'url-base/job-1/filename-C054.ext3',
+        url='url-base/path/to/filename-C054.ext3',
+        target_key='target-prefix/name-bar/job-1/filename-C054.ext3',
     ),
 ]
 
@@ -111,13 +103,3 @@ def test_get_objects_to_copy():
     assert transfer_products.get_objects_to_copy(
         JOBS, EXISTING_OBJECTS, 'target-prefix', EXTENSIONS
     ) == EXPECTED_OBJECTS_TO_COPY
-
-
-def test_get_source_key():
-    assert transfer_products.get_source_key('filename.zip', '_foo.ext') == 'filename_foo.ext'
-
-
-def test_get_target_key():
-    assert transfer_products.get_target_key(
-        'path/to/filename.ext', 'job-name', 'job-id', 'target-prefix'
-    ) == 'target-prefix/job-name/job-id/filename.ext'

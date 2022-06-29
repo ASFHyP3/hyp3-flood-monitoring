@@ -17,12 +17,8 @@ EXTENSIONS = ['_VV.tif', '_VH.tif', '_rgb.tif', '_dem.tif', '_WM.tif', '.README.
 
 @dataclass(frozen=True)
 class ObjectToCopy:
-    source_bucket: str
-    source_key: str
-    target_key: str
-
-    # TODO if we migrate to an enterprise test deployment: remove this field
     url: str
+    target_key: str
 
 
 class MissingEnvVar(Exception):
@@ -45,61 +41,36 @@ def get_objects_to_copy(
             continue
 
         assert job.succeeded()
-        source_bucket: str = job.files[0]['s3']['bucket']
 
-        zip_key: str = job.files[0]['s3']['key']
-        assert zip_key.endswith('.zip')
+        zip_filename: str = job.files[0]['filename']
+        assert zip_filename.endswith('.zip')
 
         zip_url: str = job.files[0]['url']
         assert zip_url.endswith('.zip')
 
         for ext in extensions:
-            source_key = get_source_key(zip_key, ext)
-            target_key = get_target_key(source_key, job.name, job.job_id, target_prefix)
+            filename = zip_filename.removesuffix('.zip') + ext
+            url = zip_url.removesuffix('.zip') + ext
+            assert url.endswith(filename)
 
-            url = get_source_key(zip_url, ext)
-            assert url.endswith(source_key)
-
+            target_key = '/'.join([target_prefix, job.name, job.job_id, filename])
             if target_key not in existing_objects:
-                objects_to_copy.append(
-                    ObjectToCopy(source_bucket=source_bucket, source_key=source_key, target_key=target_key, url=url)
-                )
+                objects_to_copy.append(ObjectToCopy(url=url, target_key=target_key))
 
     return objects_to_copy
-
-
-def get_source_key(zip_key: str, ext: str) -> str:
-    return zip_key.removesuffix('.zip') + ext
-
-
-def get_target_key(source_key: str, job_name: str, job_id: str, target_prefix: str) -> str:
-    source_basename = source_key.split('/')[-1]
-    return '/'.join([target_prefix, job_name, job_id, source_basename])
 
 
 def copy_objects(objects_to_copy: list[ObjectToCopy], target_bucket: str, dry_run: bool) -> None:
     for count, obj in enumerate(objects_to_copy, start=1):
         print(
             f'({count}/{len(objects_to_copy)}) '
-            f'Copying {obj.source_bucket}/{obj.source_key} to {target_bucket}/{obj.target_key}'
+            f'Copying {obj.url} to {target_bucket}/{obj.target_key}'
         )
         if not dry_run:
-            # TODO if we migrate to an enterprise test deployment:
-            #  - call copy_object instead of transfer_object
-            #  - don't except requests.HTTPError
             try:
                 transfer_object(obj, target_bucket)
             except (botocore.exceptions.ClientError, requests.HTTPError) as e:
                 print(f'Error copying object: {e}')
-
-
-def copy_object(obj: ObjectToCopy, target_bucket: str) -> None:
-    chunk_size = 104857600  # 100 MB
-    S3.Bucket(target_bucket).copy(
-        CopySource={'Bucket': obj.source_bucket, 'Key': obj.source_key},
-        Key=obj.target_key,
-        Config=boto3.s3.transfer.TransferConfig(multipart_threshold=chunk_size, multipart_chunksize=chunk_size)
-    )
 
 
 def transfer_object(obj: ObjectToCopy, target_bucket: str) -> None:
