@@ -41,6 +41,9 @@ def get_objects_to_copy(
 
     objects_to_copy = []
     for job in jobs:
+        if job.expired():
+            continue
+
         assert job.succeeded()
         source_bucket: str = job.files[0]['s3']['bucket']
 
