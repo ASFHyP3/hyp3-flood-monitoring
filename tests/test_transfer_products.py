@@ -70,11 +70,11 @@ EXPECTED_OBJECTS_TO_COPY = [
 ]
 
 
-@patch('transfer_products.transfer_object')
+@patch('transfer_products.copy_object')
 @patch('transfer_products.get_existing_objects')
 @patch('transfer_products.EXTENSIONS', EXTENSIONS)
 @patch.dict(os.environ, MOCK_ENV, clear=True)
-def test_lambda_handler(mock_get_existing_objects: MagicMock, mock_transfer_object: MagicMock):
+def test_lambda_handler(mock_get_existing_objects: MagicMock, mock_copy_object: MagicMock):
     mock_hyp3 = NonCallableMock(hyp3_sdk.HyP3)
     mock_hyp3.find_jobs.return_value = JOBS
 
@@ -90,7 +90,7 @@ def test_lambda_handler(mock_get_existing_objects: MagicMock, mock_transfer_obje
     mock_hyp3.find_jobs.assert_called_once_with(status_code='SUCCEEDED')
     mock_get_existing_objects.assert_called_once_with('target-bucket', 'target-prefix')
 
-    assert mock_transfer_object.mock_calls == [call(obj, 'target-bucket') for obj in EXPECTED_OBJECTS_TO_COPY]
+    assert mock_copy_object.mock_calls == [call(obj, 'target-bucket') for obj in EXPECTED_OBJECTS_TO_COPY]
 
 
 @patch.dict(os.environ, {}, clear=True)

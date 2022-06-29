@@ -68,12 +68,12 @@ def copy_objects(objects_to_copy: list[ObjectToCopy], target_bucket: str, dry_ru
         )
         if not dry_run:
             try:
-                transfer_object(obj, target_bucket)
+                copy_object(obj, target_bucket)
             except (botocore.exceptions.ClientError, requests.HTTPError) as e:
                 print(f'Error copying object: {e}')
 
 
-def transfer_object(obj: ObjectToCopy, target_bucket: str) -> None:
+def copy_object(obj: ObjectToCopy, target_bucket: str) -> None:
     path = download_object(obj.url)
     upload_object(path, target_bucket, obj.target_key)
     os.remove(path)
