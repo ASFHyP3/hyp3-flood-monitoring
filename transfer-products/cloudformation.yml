@@ -67,7 +67,7 @@ Resources:
       Timeout: 900
       EphemeralStorage:
         # TODO decide on appropriate size
-        Size: 10240 # MB
+        Size: 1024 # MB
 
   EventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
