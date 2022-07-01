@@ -33,8 +33,26 @@ def get_subscription_stats(subscriptions: list[dict], job_subscription_ids: list
     return rows
 
 
-def get_summary(rows: list[Row]) -> str:
-    return 'TODO'
+def get_summary(rows: list[Row], job_count: int) -> str:
+    # TODO more info: active hazards, etc.
+    # TODO improve readability
+
+    enabled_with_jobs = sum(row.enabled and row.jobs > 0 for row in rows)
+    enabled_without_jobs = sum(row.enabled and row.jobs == 0 for row in rows)
+
+    disabled_with_jobs = sum(not row.enabled and row.jobs > 0 for row in rows)
+    disabled_without_jobs = sum(not row.enabled and row.jobs == 0 for row in rows)
+
+    assert sum([enabled_with_jobs, enabled_without_jobs, disabled_with_jobs, disabled_without_jobs]) == len(rows)
+
+    return '\n'.join([
+        f'Jobs: {job_count}',
+        f'Subscriptions: {len(rows)}',
+        f'Enabled subscriptions with at least one job: {enabled_with_jobs}',
+        f'Enabled subscriptions with no jobs: {enabled_without_jobs}',
+        f'Disabled subscriptions with at least one job: {disabled_with_jobs}',
+        f'Disabled subscriptions with no jobs: {disabled_without_jobs}',
+    ])
 
 
 def write_csv(rows: list[tuple], path: str) -> None:
@@ -65,20 +83,17 @@ def main() -> None:
     session = hyp3_floods.HyP3SubscriptionsAPI._get_hyp3_api_session(earthdata_username, earthdata_password)
 
     subscriptions = _util.get_subscriptions(session, hyp3_url)['subscriptions']
-    print(f'Subscriptions: {len(subscriptions)}')
-
     jobs = _util.get_jobs(session, hyp3_url)['jobs']
-    print(f'Jobs: {len(jobs)}')
 
     job_subscription_ids = [job['subscription_id'] for job in jobs]
     subscription_ids = frozenset(subscription['subscription_id'] for subscription in subscriptions)
     assert frozenset(job_subscription_ids).issubset(subscription_ids)
 
     rows = get_subscription_stats(subscriptions, job_subscription_ids)
-    summary = get_summary(rows)
+    summary = get_summary(rows, len(jobs))
 
     write_csv([FIELDS, *rows], 'subscription-stats.csv')
-    write_summary(summary, 'subscriptions-stats-summary.txt')
+    write_summary(summary, 'subscription-stats-summary.txt')
 
 
 if __name__ == '__main__':
