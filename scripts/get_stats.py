@@ -1,4 +1,5 @@
 import argparse
+from collections import namedtuple
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -7,37 +8,49 @@ import hyp3_floods
 import _util
 
 
-def get_jobless_subscriptions(subscriptions: list[dict], job_subscription_ids: frozenset[str]) -> list[dict]:
-    return [
-        subscription for subscription in subscriptions
-        if not subscription['enabled']
-        and subscription['subscription_id'] not in job_subscription_ids
-    ]
+FIELDS = ('id', 'name', 'aoi', 'creation_date', 'start', 'end', 'delta', 'jobs', 'enabled')
+
+Row = namedtuple('Row', FIELDS)
 
 
-def get_subscription_stats(subscriptions: list[dict]) -> list[tuple]:
-    rows = [('id', 'name', 'aoi', 'start', 'end', 'delta')]
+def get_subscription_stats(subscriptions: list[dict], job_subscription_ids: list[str]) -> list[Row]:
+    rows = []
     for subscription in subscriptions:
         start = subscription['search_parameters']['start']
         end = subscription['search_parameters']['end']
-        rows.append((
-            subscription['subscription_id'],
-            subscription['job_specification']['name'],
-            subscription['search_parameters']['intersectsWith'],
-            start,
-            end,
-            parse_datetime(end) - parse_datetime(start),
+        rows.append(Row(
+            id=subscription['subscription_id'],
+            name=subscription['job_specification']['name'],
+            aoi=subscription['search_parameters']['intersectsWith'],
+            creation_date=subscription['creation_date'],
+            start=start,
+            end=end,
+            delta=parse_datetime(end) - parse_datetime(start),
+            jobs=sum(job_sub_id == subscription['subscription_id'] for job_sub_id in job_subscription_ids),
+            enabled=subscription['enabled'],
         ))
+    rows.sort(key=lambda row: row.creation_date)
     return rows
 
 
-def write_subscription_stats(rows: list[tuple], csv_path: str) -> None:
+def get_summary(rows: list[Row]) -> str:
+    return 'TODO'
+
+
+def write_csv(rows: list[tuple], path: str) -> None:
     csv = '\n'.join(','.join(f'"{field}"' for field in row) for row in rows)
 
-    with open(csv_path, 'w') as f:
+    with open(path, 'w') as f:
         f.write(csv)
 
-    print(f'Wrote {csv_path}')
+    print(f'Wrote {path}')
+
+
+def write_summary(summary: str, path: str) -> None:
+    with open(path, 'w') as f:
+        f.write(summary)
+
+    print(f'Wrote {path}')
 
 
 def parse_datetime(datetime_str: str) -> datetime:
@@ -52,22 +65,20 @@ def main() -> None:
     session = hyp3_floods.HyP3SubscriptionsAPI._get_hyp3_api_session(earthdata_username, earthdata_password)
 
     subscriptions = _util.get_subscriptions(session, hyp3_url)['subscriptions']
+    print(f'Subscriptions: {len(subscriptions)}')
 
     jobs = _util.get_jobs(session, hyp3_url)['jobs']
     print(f'Jobs: {len(jobs)}')
 
-    job_subscription_ids = frozenset(job['subscription_id'] for job in jobs)
+    job_subscription_ids = [job['subscription_id'] for job in jobs]
     subscription_ids = frozenset(subscription['subscription_id'] for subscription in subscriptions)
-    assert job_subscription_ids.issubset(subscription_ids)
+    assert frozenset(job_subscription_ids).issubset(subscription_ids)
 
-    print(f'{len(job_subscription_ids)} / {len(subscriptions)} subscriptions have at least one job')
+    rows = get_subscription_stats(subscriptions, job_subscription_ids)
+    summary = get_summary(rows)
 
-    jobless_subscriptions = get_jobless_subscriptions(subscriptions, job_subscription_ids)
-
-    print(f'{len(jobless_subscriptions)} / {len(subscriptions)} subscriptions are disabled and jobless')
-
-    write_subscription_stats(get_subscription_stats(jobless_subscriptions), 'jobless-subscription-stats.csv')
-    write_subscription_stats(get_subscription_stats(subscriptions), 'subscription-stats.csv')
+    write_csv([FIELDS, *rows], 'subscription-stats.csv')
+    write_summary(summary, 'subscriptions-stats-summary.txt')
 
 
 if __name__ == '__main__':
