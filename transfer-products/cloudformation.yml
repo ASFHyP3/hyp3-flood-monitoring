@@ -1,9 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
-  PDCHazardsAuthToken:
+  HyP3URL:
     Type: String
-    NoEcho: true
 
   EarthdataUsername:
     Type: String
@@ -11,6 +10,12 @@ Parameters:
   EarthdataPassword:
     Type: String
     NoEcho: true
+
+  S3TargetBucket:
+    Type: String
+
+  S3TargetPrefix:
+    Type: String
 
 Resources:
   LogGroup:
@@ -36,25 +41,33 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${S3TargetBucket}"
+              - Effect: Allow
+                Action:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
-
 
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
       Environment:
         Variables:
-          PDC_HAZARDS_AUTH_TOKEN: !Ref PDCHazardsAuthToken
+          HYP3_URL: !Ref HyP3URL
           EARTHDATA_USERNAME: !Ref EarthdataUsername
           EARTHDATA_PASSWORD: !Ref EarthdataPassword
-      Code: src/
-      Handler: hyp3_floods.lambda_handler
+          S3_TARGET_BUCKET: !Ref S3TargetBucket
+          S3_TARGET_PREFIX: !Ref S3TargetPrefix
+      Code: transfer-products/src/
+      Handler: transfer_products.lambda_handler
       MemorySize: 128
       Role: !GetAtt Role.Arn
       Runtime: python3.9
       Timeout: 900
+      EphemeralStorage:
+        # TODO decide on appropriate size
+        Size: 1024 # MB
 
   EventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
@@ -66,7 +79,7 @@ Resources:
   Schedule:
     Type: AWS::Events::Rule
     Properties:
-      ScheduleExpression: "rate(15 minutes)"
+      ScheduleExpression: "rate(6 hours)"  # TODO decide on appropriate rate
       Targets:
         - Arn: !GetAtt Lambda.Arn
           Id: lambda

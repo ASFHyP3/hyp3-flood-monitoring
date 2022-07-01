@@ -1,4 +1,4 @@
-export PYTHONPATH = ${PWD}/lambda/src
+export PYTHONPATH = ${PWD}/hyp3-floods/src:${PWD}/transfer-products/src
 
 install:
 	python -m pip install --upgrade pip && \
@@ -6,13 +6,8 @@ install:
 
 install-lambda-deps:
 	python -m pip install --upgrade pip && \
-	python -m pip install -r lambda/requirements.txt -t lambda/src/
-
-lambda_env ?= env/dev.env
-run:
-	ENV_VARS=$$(xargs < $(lambda_env)) && \
-	export $$ENV_VARS && \
-	python -c 'from hyp3_floods import lambda_handler; lambda_handler(None, None)'
+	python -m pip install -r hyp3-floods/requirements.txt -t hyp3-floods/src/ \
+	python -m pip install -r transfer-products/requirements.txt -t transfer-products/src/
 
 test:
 	pytest tests/
@@ -20,17 +15,7 @@ test:
 static: flake8 cfn-lint
 
 flake8:
-	flake8 --max-line-length=120 lambda tests
+	flake8 --max-line-length=120
 
 cfn-lint:
-	cfn-lint lambda/cloudformation.yml --info --ignore-checks W3002
-
-check-subscriptions:
-	ENV_VARS=$$(xargs < $(lambda_env)) && \
-	export $$ENV_VARS && \
-	AWS_PROFILE=hyp3 python scripts/check_subscriptions.py
-
-get-stats:
-	ENV_VARS=$$(xargs < $(lambda_env)) && \
-	export $$ENV_VARS && \
-	python scripts/get_stats.py
+	cfn-lint --template `find . -name cloudformation.yml` --info --ignore-checks W3002

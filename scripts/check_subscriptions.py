@@ -1,6 +1,9 @@
+import argparse
+import os
 import time
 
 import boto3
+from dotenv import load_dotenv
 
 import hyp3_floods
 import _util
@@ -63,11 +66,12 @@ def count_updated_subscriptions(subscriptions: list[dict]) -> tuple[str, int]:
 
 
 def main() -> None:
+    hyp3_url = hyp3_floods.get_env_var('HYP3_URL')
     earthdata_username = hyp3_floods.get_env_var('EARTHDATA_USERNAME')
     earthdata_password = hyp3_floods.get_env_var('EARTHDATA_PASSWORD')
 
     session = hyp3_floods.HyP3SubscriptionsAPI._get_hyp3_api_session(earthdata_username, earthdata_password)
-    subscriptions = _util.get_subscriptions(session)['subscriptions']
+    subscriptions = _util.get_subscriptions(session, hyp3_url)['subscriptions']
 
     client = boto3.client('logs')
 
@@ -85,4 +89,11 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+    os.environ['AWS_PROFILE'] = 'hyp3'
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dotenv_path')
+    args = parser.parse_args()
+
+    load_dotenv(dotenv_path=args.dotenv_path)
     main()

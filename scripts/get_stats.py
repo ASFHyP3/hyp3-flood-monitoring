@@ -1,4 +1,7 @@
+import argparse
 from datetime import datetime
+
+from dotenv import load_dotenv
 
 import hyp3_floods
 import _util
@@ -38,14 +41,15 @@ def parse_datetime(datetime_str: str) -> datetime:
 
 
 def main() -> None:
+    hyp3_url = hyp3_floods.get_env_var('HYP3_URL')
     earthdata_username = hyp3_floods.get_env_var('EARTHDATA_USERNAME')
     earthdata_password = hyp3_floods.get_env_var('EARTHDATA_PASSWORD')
 
     session = hyp3_floods.HyP3SubscriptionsAPI._get_hyp3_api_session(earthdata_username, earthdata_password)
 
-    subscriptions = _util.get_subscriptions(session)['subscriptions']
+    subscriptions = _util.get_subscriptions(session, hyp3_url)['subscriptions']
 
-    jobs = _util.get_jobs(session)['jobs']
+    jobs = _util.get_jobs(session, hyp3_url)['jobs']
     print(f'Jobs: {len(jobs)}')
 
     job_subscription_ids = frozenset(job['subscription_id'] for job in jobs)
@@ -63,4 +67,9 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dotenv_path')
+    args = parser.parse_args()
+
+    load_dotenv(dotenv_path=args.dotenv_path)
     main()

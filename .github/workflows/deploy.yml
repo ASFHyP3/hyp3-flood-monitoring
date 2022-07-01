@@ -11,8 +11,17 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   CLOUDFORMATION_ROLE_ARN: ${{ secrets.CLOUDFORMATION_ROLE_ARN }}
   PDC_HAZARDS_AUTH_TOKEN: ${{ secrets.PDC_HAZARDS_AUTH_TOKEN }}
+
+  # TODO use watermap api for prod: https://hyp3-watermap.asf.alaska.edu
+  HYP3_URL: https://hyp3-test-api.asf.alaska.edu
+
   EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
   EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
+
+  S3_TARGET_BUCKET: hyp3-nasa-disasters
+
+  # TODO use different prefix for prod
+  S3_TARGET_PREFIX: PDC-test
 
 jobs:
   deploy:
@@ -32,7 +41,7 @@ jobs:
       - name: Package and deploy
         run: |
           aws cloudformation package \
-            --template-file lambda/cloudformation.yml \
+            --template-file cloudformation.yml \
             --s3-bucket cf-templates-aubvn3i9olmk-us-west-2 \
             --output-template-file packaged.yml
           aws cloudformation deploy \
@@ -42,5 +51,8 @@ jobs:
             --role-arn ${CLOUDFORMATION_ROLE_ARN} \
             --parameter-overrides \
               PDCHazardsAuthToken=${PDC_HAZARDS_AUTH_TOKEN} \
+              HyP3URL=${HYP3_URL} \
               EarthdataUsername=${EARTHDATA_USERNAME} \
-              EarthdataPassword=${EARTHDATA_PASSWORD}
+              EarthdataPassword=${EARTHDATA_PASSWORD} \
+              S3TargetBucket=${S3_TARGET_BUCKET} \
+              S3TargetPrefix=${S3_TARGET_PREFIX}

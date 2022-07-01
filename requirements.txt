@@ -1,5 +1,7 @@
--r lambda/requirements.txt
-boto3
+-r scripts/requirements.txt
+-r hyp3-floods/requirements.txt
+-r transfer-products/requirements.txt
 cfn-lint
 flake8
 pytest
+python-dotenv

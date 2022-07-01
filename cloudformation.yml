@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  PDCHazardsAuthToken:
+    Type: String
+    NoEcho: true
+
+  HyP3URL:
+    Type: String
+
+  EarthdataUsername:
+    Type: String
+
+  EarthdataPassword:
+    Type: String
+    NoEcho: true
+
+  S3TargetBucket:
+    Type: String
+
+  S3TargetPrefix:
+    Type: String
+
+Resources:
+  TransferProducts:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: transfer-products/cloudformation.yml
+      Parameters:
+        HyP3URL: !Ref HyP3URL
+        EarthdataUsername: !Ref EarthdataUsername
+        EarthdataPassword: !Ref EarthdataPassword
+        S3TargetBucket: !Ref S3TargetBucket
+        S3TargetPrefix: !Ref S3TargetPrefix
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${Lambda}"
+      RetentionInDays: 731
+
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Action: sts:AssumeRole
+          Principal:
+            Service: lambda.amazonaws.com
+          Effect: Allow
+      Policies:
+        - PolicyName: policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+
+  Lambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Environment:
+        Variables:
+          PDC_HAZARDS_AUTH_TOKEN: !Ref PDCHazardsAuthToken
+          HYP3_URL: !Ref HyP3URL
+          EARTHDATA_USERNAME: !Ref EarthdataUsername
+          EARTHDATA_PASSWORD: !Ref EarthdataPassword
+      Code: hyp3-floods/src/
+      Handler: hyp3_floods.lambda_handler
+      MemorySize: 128
+      Role: !GetAtt Role.Arn
+      Runtime: python3.9
+      Timeout: 900
+
+  EventInvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref Lambda
+      Qualifier: $LATEST
+      MaximumRetryAttempts: 0
+
+  Schedule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: "rate(15 minutes)"
+      Targets:
+        - Arn: !GetAtt Lambda.Arn
+          Id: lambda
+
+  EventPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt Lambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt Schedule.Arn
