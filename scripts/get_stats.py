@@ -15,7 +15,7 @@ def get_jobless_subscriptions(subscriptions: list[dict], job_subscription_ids: f
     ]
 
 
-def write_subscription_stats(subscriptions: list[dict], csv_path: str) -> None:
+def get_subscription_stats(subscriptions: list[dict]) -> list[tuple]:
     rows = [('id', 'name', 'aoi', 'start', 'end', 'delta')]
     for subscription in subscriptions:
         start = subscription['search_parameters']['start']
@@ -28,6 +28,10 @@ def write_subscription_stats(subscriptions: list[dict], csv_path: str) -> None:
             end,
             parse_datetime(end) - parse_datetime(start),
         ))
+    return rows
+
+
+def write_subscription_stats(rows: list[tuple], csv_path: str) -> None:
     csv = '\n'.join(','.join(f'"{field}"' for field in row) for row in rows)
 
     with open(csv_path, 'w') as f:
@@ -62,8 +66,8 @@ def main() -> None:
 
     print(f'{len(jobless_subscriptions)} / {len(subscriptions)} subscriptions are disabled and jobless')
 
-    write_subscription_stats(jobless_subscriptions, 'jobless-subscription-stats.csv')
-    write_subscription_stats(subscriptions, 'subscription-stats.csv')
+    write_subscription_stats(get_subscription_stats(jobless_subscriptions), 'jobless-subscription-stats.csv')
+    write_subscription_stats(get_subscription_stats(subscriptions), 'subscription-stats.csv')
 
 
 if __name__ == '__main__':
