@@ -34,7 +34,7 @@ def get_subscription_stats(subscriptions: list[dict], job_subscription_ids: list
 
 
 def get_summary(rows: list[Row], job_count: int) -> str:
-    # TODO more info: active hazards, etc.
+    # TODO more info: active hazards, aoi changes, etc.
     # TODO improve readability
 
     enabled_with_jobs = sum(row.enabled and row.jobs > 0 for row in rows)
