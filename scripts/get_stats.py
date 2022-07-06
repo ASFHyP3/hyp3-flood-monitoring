@@ -3,6 +3,7 @@ from collections import namedtuple
 from datetime import datetime
 
 from dotenv import load_dotenv
+from hyp3_sdk import HyP3
 
 import hyp3_floods
 import _util
@@ -81,11 +82,12 @@ def main() -> None:
     earthdata_password = hyp3_floods.get_env_var('EARTHDATA_PASSWORD')
 
     session = hyp3_floods.HyP3SubscriptionsAPI._get_hyp3_api_session(earthdata_username, earthdata_password)
+    hyp3 = HyP3(hyp3_url, earthdata_username, earthdata_password)
 
     subscriptions = _util.get_subscriptions(session, hyp3_url)['subscriptions']
-    jobs = _util.get_jobs(session, hyp3_url)['jobs']
+    jobs = hyp3.find_jobs()
 
-    job_subscription_ids = [job['subscription_id'] for job in jobs]
+    job_subscription_ids = [job.subscription_id for job in jobs]
     subscription_ids = frozenset(subscription['subscription_id'] for subscription in subscriptions)
     assert frozenset(job_subscription_ids).issubset(subscription_ids)
 
