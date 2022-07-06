@@ -36,8 +36,6 @@ def get_subscription_stats(subscriptions: list[dict], job_subscription_ids: list
 
 
 def get_summary(rows: list[Row], job_count: int, active_hazard_count: int, aoi_changes_count: int) -> str:
-    # TODO improve readability
-
     enabled_with_jobs = sum(row.enabled and row.jobs > 0 for row in rows)
     enabled_without_jobs = sum(row.enabled and row.jobs == 0 for row in rows)
 
@@ -47,17 +45,23 @@ def get_summary(rows: list[Row], job_count: int, active_hazard_count: int, aoi_c
     assert sum([enabled_with_jobs, enabled_without_jobs, disabled_with_jobs, disabled_without_jobs]) == len(rows)
 
     return '\n'.join([
-        'Test system was deployed on 2022-06-06',
-        f'Current active hazards: {active_hazard_count}',
-        f'Total number of AOI changes: {aoi_changes_count}',
-        '  - Note that we started logging AOI changes on 2022-06-15',
-        f'Jobs: {job_count}',
-        f'Subscriptions: {len(rows)}',
-        f'Enabled subscriptions with at least one job: {enabled_with_jobs}',
-        f'Enabled subscriptions with no jobs: {enabled_without_jobs}',
-        f'Disabled subscriptions with at least one job: {disabled_with_jobs}',
-        f'Disabled subscriptions with no jobs: {disabled_without_jobs}',
-        ''
+        f'Active hazards: {active_hazard_count}\n',
+
+        'Test system was deployed on 2022-06-06\n',
+
+        f'Jobs to date: {job_count}',
+        f'Subscriptions to date: {len(rows)}',
+        f'  - Active subscriptions with at least one job: {enabled_with_jobs}',
+        f'  - Active subscriptions with no jobs: {enabled_without_jobs}',
+        f'  - Expired subscriptions with at least one job: {disabled_with_jobs}',
+        f'  - Expired subscriptions with no jobs: {disabled_without_jobs}\n',
+
+        ('Note that the number of active subscriptions is greater than the number of active hazards, '
+         'as a subscription remains active for a few days after the corresponding hazard expires, in case '
+         'any new data becomes available that was acquired during the hazard\'s lifetime.\n'),
+
+        f'AOI changes to date: {aoi_changes_count}',
+        '  - Note that we started logging AOI changes on 2022-06-15\n',
     ])
 
 
@@ -89,13 +93,17 @@ def main() -> None:
     session = hyp3_floods.HyP3SubscriptionsAPI._get_hyp3_api_session(earthdata_username, earthdata_password)
     hyp3 = HyP3(hyp3_url, earthdata_username, earthdata_password)
 
+    print('Fetching subscriptions')
     subscriptions = _util.get_subscriptions(session, hyp3_url)['subscriptions']
+
+    print('Fetching jobs')
     jobs = hyp3.find_jobs()
 
     job_subscription_ids = [job.subscription_id for job in jobs]
     subscription_ids = frozenset(subscription['subscription_id'] for subscription in subscriptions)
     assert frozenset(job_subscription_ids).issubset(subscription_ids)
 
+    print('Querying logs')
     _, active_hazard_count = _logs.get_active_hazards_count()
     aoi_changes_count = _logs.get_updated_aoi_count()
 
