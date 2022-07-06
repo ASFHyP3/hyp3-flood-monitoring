@@ -35,7 +35,7 @@ def get_subscription_stats(subscriptions: list[dict], job_subscription_ids: list
     return rows
 
 
-def get_summary(rows: list[Row], job_count: int, active_hazard_count: int) -> str:
+def get_summary(rows: list[Row], job_count: int, active_hazard_count: int, aoi_changes_count: int) -> str:
     # TODO more info: active hazards, aoi changes, etc.
     # TODO improve readability
 
@@ -48,13 +48,17 @@ def get_summary(rows: list[Row], job_count: int, active_hazard_count: int) -> st
     assert sum([enabled_with_jobs, enabled_without_jobs, disabled_with_jobs, disabled_without_jobs]) == len(rows)
 
     return '\n'.join([
-        f'Active hazards: {active_hazard_count}',
+        'Test system was deployed on 2022-06-06',
+        f'Current active hazards: {active_hazard_count}',
+        f'Total number of AOI changes: {aoi_changes_count}',
+        '  - Note that we started logging AOI changes on 2022-06-15',
         f'Jobs: {job_count}',
         f'Subscriptions: {len(rows)}',
         f'Enabled subscriptions with at least one job: {enabled_with_jobs}',
         f'Enabled subscriptions with no jobs: {enabled_without_jobs}',
         f'Disabled subscriptions with at least one job: {disabled_with_jobs}',
         f'Disabled subscriptions with no jobs: {disabled_without_jobs}',
+        ''
     ])
 
 
@@ -94,9 +98,15 @@ def main() -> None:
     assert frozenset(job_subscription_ids).issubset(subscription_ids)
 
     _, active_hazard_count = _logs.get_active_hazards_count()
+    aoi_changes_count = _logs.get_updated_aoi_count()
 
     rows = get_subscription_stats(subscriptions, job_subscription_ids)
-    summary = get_summary(rows, job_count=len(jobs), active_hazard_count=active_hazard_count)
+    summary = get_summary(
+        rows,
+        job_count=len(jobs),
+        active_hazard_count=active_hazard_count,
+        aoi_changes_count=aoi_changes_count
+    )
 
     write_csv([FIELDS, *rows], 'subscription-stats.csv')
     write_summary(summary, 'subscription-stats-summary.txt')

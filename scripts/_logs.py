@@ -50,3 +50,16 @@ def get_active_hazards_count() -> tuple[str, int]:
     count = int(message[1])
 
     return timestamp, count
+
+
+def get_updated_aoi_count() -> int:
+    results = get_query_results(
+        logGroupName=LOG_GROUP,
+        startTime=0,
+        endTime=int(time.time() + 3600),
+        queryString='fields @message | filter @message like /Updating AOI for subscription/ | stats count()'
+    )
+
+    count = int(results['results'][0][0]['value'])
+    assert count == results['statistics']['recordsMatched']
+    return count
