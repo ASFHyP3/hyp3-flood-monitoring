@@ -7,6 +7,7 @@ from hyp3_sdk import HyP3
 
 import hyp3_floods
 import _util
+import _logs
 
 
 FIELDS = ('id', 'name', 'aoi', 'creation_date', 'start', 'end', 'delta', 'jobs', 'enabled')
@@ -34,7 +35,7 @@ def get_subscription_stats(subscriptions: list[dict], job_subscription_ids: list
     return rows
 
 
-def get_summary(rows: list[Row], job_count: int) -> str:
+def get_summary(rows: list[Row], job_count: int, active_hazard_count: int) -> str:
     # TODO more info: active hazards, aoi changes, etc.
     # TODO improve readability
 
@@ -47,6 +48,7 @@ def get_summary(rows: list[Row], job_count: int) -> str:
     assert sum([enabled_with_jobs, enabled_without_jobs, disabled_with_jobs, disabled_without_jobs]) == len(rows)
 
     return '\n'.join([
+        f'Active hazards: {active_hazard_count}',
         f'Jobs: {job_count}',
         f'Subscriptions: {len(rows)}',
         f'Enabled subscriptions with at least one job: {enabled_with_jobs}',
@@ -91,8 +93,10 @@ def main() -> None:
     subscription_ids = frozenset(subscription['subscription_id'] for subscription in subscriptions)
     assert frozenset(job_subscription_ids).issubset(subscription_ids)
 
+    _, active_hazard_count = _logs.get_active_hazards_count()
+
     rows = get_subscription_stats(subscriptions, job_subscription_ids)
-    summary = get_summary(rows, len(jobs))
+    summary = get_summary(rows, job_count=len(jobs), active_hazard_count=active_hazard_count)
 
     write_csv([FIELDS, *rows], 'subscription-stats.csv')
     write_summary(summary, 'subscription-stats-summary.txt')
