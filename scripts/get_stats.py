@@ -103,11 +103,12 @@ def main() -> None:
     subscription_ids = frozenset(subscription['subscription_id'] for subscription in subscriptions)
     assert frozenset(job_subscription_ids).issubset(subscription_ids)
 
+    rows = get_subscription_stats(subscriptions, job_subscription_ids)
+
     print('Querying logs')
     _, active_hazard_count = _logs.get_active_hazards_count()
     aoi_changes_count = _logs.get_updated_aoi_count()
 
-    rows = get_subscription_stats(subscriptions, job_subscription_ids)
     summary = get_summary(
         rows,
         job_count=len(jobs),
