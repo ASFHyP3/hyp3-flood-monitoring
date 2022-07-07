@@ -1,10 +1,11 @@
 name: Generate Stats
 
 on:
+  # TODO remove
   push:
     branches:
       - scripts
-# TODO
+# TODO uncomment
 #  schedule:
 #    - cron: '0 9 * * *'
   workflow_dispatch:
