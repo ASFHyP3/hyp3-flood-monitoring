@@ -64,7 +64,11 @@ def filter_hazards(hazards: list[dict], current_time_in_ms: int) -> list[dict]:
 
 
 def is_valid_hazard(hazard: dict, current_time_in_ms: int) -> bool:
-    return hazard['type_ID'] == 'FLOOD' and int(hazard['start_Date']) <= current_time_in_ms
+    return (
+        hazard['type_ID'] == 'FLOOD'
+        and hazard['category_ID'] == 'EVENT'
+        and int(hazard['start_Date']) <= current_time_in_ms
+    )
 
 
 def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional[dict]:
