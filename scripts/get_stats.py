@@ -2,11 +2,6 @@ import argparse
 from collections import namedtuple
 from datetime import datetime
 
-try:
-    from dotenv import load_dotenv
-except ModuleNotFoundError:
-    pass
-
 from hyp3_sdk import HyP3
 
 import hyp3_floods
@@ -130,6 +125,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.env is not None:
+        from dotenv import load_dotenv
         load_dotenv(dotenv_path=args.env)
 
     main()
