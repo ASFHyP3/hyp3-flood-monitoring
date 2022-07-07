@@ -122,8 +122,10 @@ def main() -> None:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('dotenv_path')
+    parser.add_argument('--env')
     args = parser.parse_args()
 
-    load_dotenv(dotenv_path=args.dotenv_path)
+    if args.env is not None:
+        load_dotenv(dotenv_path=args.env)
+
     main()
