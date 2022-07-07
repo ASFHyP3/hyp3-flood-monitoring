@@ -1,13 +1,16 @@
 import argparse
 from collections import namedtuple
-from datetime import datetime
+from datetime import datetime, timezone
 
+import boto3
 from hyp3_sdk import HyP3
 
 import hyp3_floods
 import _util
 import _logs
 
+
+TARGET_BUCKET = 'hyp3-flood-monitoring-stats'
 
 FIELDS = ('id', 'name', 'aoi', 'creation_date', 'start', 'end', 'delta', 'jobs', 'enabled')
 
@@ -32,6 +35,10 @@ def get_subscription_stats(subscriptions: list[dict], job_subscription_ids: list
         ))
     rows.sort(key=lambda row: row.creation_date)
     return rows
+
+
+def parse_datetime(datetime_str: str) -> datetime:
+    return datetime.strptime(datetime_str, '%Y-%m-%dT%H:%M:%SZ')
 
 
 def get_summary(rows: list[Row], job_count: int, active_hazard_count: int, aoi_changes_count: int) -> str:
@@ -80,11 +87,7 @@ def write_summary(summary: str, path: str) -> None:
     print(f'Wrote {path}')
 
 
-def parse_datetime(datetime_str: str) -> datetime:
-    return datetime.strptime(datetime_str, '%Y-%m-%dT%H:%M:%SZ')
-
-
-def main() -> None:
+def main(upload: bool) -> None:
     hyp3_url = hyp3_floods.get_env_var('HYP3_URL')
     earthdata_username = hyp3_floods.get_env_var('EARTHDATA_USERNAME')
     earthdata_password = hyp3_floods.get_env_var('EARTHDATA_PASSWORD')
@@ -115,17 +118,27 @@ def main() -> None:
         aoi_changes_count=aoi_changes_count
     )
 
-    write_csv([FIELDS, *rows], 'subscription-stats.csv')
-    write_summary(summary, 'subscription-stats-summary.txt')
+    csv_name = 'subscription-stats.csv'
+    summary_name = 'subscription-stats-summary.txt'
+
+    write_csv([FIELDS, *rows], csv_name)
+    write_summary(summary, summary_name)
+
+    if upload:
+        s3 = boto3.resource('s3')
+        now = datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat()
+        s3.Bucket(TARGET_BUCKET).upload_file(Filename=csv_name, Key=f'{now}/{csv_name}')
+        s3.Bucket(TARGET_BUCKET).upload_file(Filename=summary_name, Key=f'{now}/{summary_name}')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--env')
+    parser.add_argument('--upload', action='store_true')
     args = parser.parse_args()
 
     if args.env is not None:
         from dotenv import load_dotenv
         load_dotenv(dotenv_path=args.env)
 
-    main()
+    main(args.upload)
