@@ -64,7 +64,6 @@ def filter_hazards(hazards: list[dict], current_time_in_ms: int) -> list[dict]:
 
 
 def is_valid_hazard(hazard: dict, current_time_in_ms: int) -> bool:
-    # TODO should we include other hazard types?
     return hazard['type_ID'] == 'FLOOD' and int(hazard['start_Date']) <= current_time_in_ms
 
 
