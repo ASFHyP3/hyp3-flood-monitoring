@@ -1,10 +1,6 @@
 name: Generate Stats
 
 on:
-  # TODO remove
-  push:
-    branches:
-      - scripts
 # TODO uncomment
 #  schedule:
 #    - cron: '0 9 * * *'
