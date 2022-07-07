@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import requests
-from dotenv import load_dotenv
 
 PDC_URL = 'https://sentry.pdc.org'
 
@@ -231,6 +230,8 @@ def main(dry_run: bool) -> None:
 
 
 if __name__ == '__main__':
+    from dotenv import load_dotenv
+
     parser = argparse.ArgumentParser()
     parser.add_argument('dotenv_path')
     parser.add_argument('--no-dry-run', action='store_true')

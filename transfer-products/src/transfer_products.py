@@ -7,7 +7,6 @@ import boto3.s3.transfer
 import botocore.exceptions
 import hyp3_sdk
 import requests
-from dotenv import load_dotenv
 
 S3 = boto3.resource('s3')
 
@@ -138,6 +137,8 @@ def main(dry_run: bool) -> None:
 
 
 if __name__ == '__main__':
+    from dotenv import load_dotenv
+
     parser = argparse.ArgumentParser()
     parser.add_argument('dotenv_path')
     parser.add_argument('--no-dry-run', action='store_true')
