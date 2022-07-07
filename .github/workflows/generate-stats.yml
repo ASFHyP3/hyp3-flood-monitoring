@@ -3,6 +3,7 @@ name: Generate Stats
 on:
   schedule:
     - cron: '0 9 * * *'
+  workflow_dispatch:
 
 env:
   HYP3_URL: https://hyp3-test-api.asf.alaska.edu
@@ -16,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: scripts
       - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ env.GENERATE_STATS_AWS_ACCESS_KEY_ID }}
