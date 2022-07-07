@@ -1,10 +1,8 @@
 name: Generate Stats
 
 on:
-# TODO uncomment
-#  schedule:
-#    - cron: '0 9 * * *'
-  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *'
 
 env:
   HYP3_URL: https://hyp3-test-api.asf.alaska.edu
