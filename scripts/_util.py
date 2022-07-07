@@ -1,9 +1,6 @@
 import requests
 
 
-# TODO handle pagination
-
-
 def get_subscriptions(session: requests.Session, hyp3_url: str) -> dict:
     url = f'{hyp3_url}/subscriptions'
     response = session.get(url)
