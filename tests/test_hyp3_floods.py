@@ -203,35 +203,6 @@ def test_filter_hazards():
     assert hyp3_floods.filter_hazards(hazards, current_time_in_ms=3) == [hazards[0], hazards[2], hazards[4]]
 
 
-def test_is_valid_hazard_start_date():
-    assert hyp3_floods.is_valid_hazard(
-        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 1},
-        current_time_in_ms=2
-    ) is True
-
-    assert hyp3_floods.is_valid_hazard(
-        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 2},
-        current_time_in_ms=2
-    ) is True
-
-    assert hyp3_floods.is_valid_hazard(
-        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 3},
-        current_time_in_ms=2
-    ) is False
-
-
-def test_is_valid_hazard_type():
-    assert hyp3_floods.is_valid_hazard(
-        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 1},
-        current_time_in_ms=2
-    ) is True
-
-    assert hyp3_floods.is_valid_hazard(
-        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'foo', 'start_Date': 1},
-        current_time_in_ms=2
-    ) is False
-
-
 def test_is_valid_hazard_category():
     assert hyp3_floods.is_valid_hazard(
         {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 1},
@@ -252,6 +223,35 @@ def test_is_valid_hazard_severity():
 
     assert hyp3_floods.is_valid_hazard(
         {'category_ID': 'EVENT', 'severity_ID': 'foo', 'type_ID': 'FLOOD', 'start_Date': 1},
+        current_time_in_ms=2
+    ) is False
+
+
+def test_is_valid_hazard_type():
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 1},
+        current_time_in_ms=2
+    ) is True
+
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'foo', 'start_Date': 1},
+        current_time_in_ms=2
+    ) is False
+
+
+def test_is_valid_hazard_start_date():
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 1},
+        current_time_in_ms=2
+    ) is True
+
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 2},
+        current_time_in_ms=2
+    ) is True
+
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 3},
         current_time_in_ms=2
     ) is False
 
