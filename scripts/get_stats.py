@@ -2,7 +2,11 @@ import argparse
 from collections import namedtuple
 from datetime import datetime
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:
+    pass
+
 from hyp3_sdk import HyP3
 
 import hyp3_floods
