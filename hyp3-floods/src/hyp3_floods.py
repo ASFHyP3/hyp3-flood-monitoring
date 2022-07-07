@@ -67,6 +67,7 @@ def is_valid_hazard(hazard: dict, current_time_in_ms: int) -> bool:
     return (
         hazard['type_ID'] == 'FLOOD'
         and hazard['category_ID'] == 'EVENT'
+        and hazard['severity_ID'] == 'WARNING'
         and int(hazard['start_Date']) <= current_time_in_ms
     )
 
