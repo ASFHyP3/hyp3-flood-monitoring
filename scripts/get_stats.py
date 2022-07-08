@@ -118,8 +118,9 @@ def main(upload: bool) -> None:
         aoi_changes_count=aoi_changes_count
     )
 
-    csv_name = 'subscription-stats.csv'
-    summary_name = 'subscription-stats-summary.txt'
+    now = datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat()
+    csv_name = f'subscription-stats-{now}.csv'
+    summary_name = f'subscription-stats-summary-{now}.txt'
 
     write_csv([FIELDS, *rows], csv_name)
     write_summary(summary, summary_name)
@@ -127,7 +128,6 @@ def main(upload: bool) -> None:
     if upload:
         print('Uploading to S3')
         s3 = boto3.resource('s3')
-        now = datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat()
         s3.Bucket(TARGET_BUCKET).upload_file(Filename=csv_name, Key=f'{now}/{csv_name}')
         s3.Bucket(TARGET_BUCKET).upload_file(Filename=summary_name, Key=f'{now}/{summary_name}')
 
