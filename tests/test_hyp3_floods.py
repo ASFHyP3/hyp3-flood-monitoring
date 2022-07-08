@@ -30,12 +30,36 @@ def test_lambda_handler(
     mock_hyp3_api_class.return_value = mock_hyp3_api
 
     active_hazards = [
-        {'uuid': '0', 'type_ID': 'FLOOD', 'start_Date': 1653658144630},
-        {'uuid': '1', 'type_ID': 'foo', 'start_Date': 1653658144630},
-        {'uuid': '2', 'type_ID': 'FLOOD', 'start_Date': 1653658144640},
-        {'uuid': '3', 'type_ID': 'bar', 'start_Date': 1653658144640},
-        {'uuid': '4', 'type_ID': 'FLOOD', 'start_Date': 1653658144650},
-        {'uuid': '5', 'type_ID': 'baz', 'start_Date': 1653658144650},
+        {'uuid': '0',
+         'category_ID': 'EVENT',
+         'severity_ID': 'WARNING',
+         'type_ID': 'FLOOD',
+         'start_Date': 1653658144630},
+        {'uuid': '1',
+         'category_ID': 'EVENT',
+         'severity_ID': 'WARNING',
+         'type_ID': 'foo',
+         'start_Date': 1653658144630},
+        {'uuid': '2',
+         'category_ID': 'EVENT',
+         'severity_ID': 'WARNING',
+         'type_ID': 'FLOOD',
+         'start_Date': 1653658144640},
+        {'uuid': '3',
+         'category_ID': 'EVENT',
+         'severity_ID': 'WARNING',
+         'type_ID': 'bar',
+         'start_Date': 1653658144640},
+        {'uuid': '4',
+         'category_ID': 'EVENT',
+         'severity_ID': 'WARNING',
+         'type_ID': 'FLOOD',
+         'start_Date': 1653658144650},
+        {'uuid': '5',
+         'category_ID': 'EVENT',
+         'severity_ID': 'WARNING',
+         'type_ID': 'baz',
+         'start_Date': 1653658144650},
     ]
     mock_get_active_hazards.return_value = active_hazards
 
@@ -166,12 +190,12 @@ def test_process_active_hazard_duplicate_subscription_names():
 
 def test_filter_hazards():
     hazards = [
-        {'uuid': 0, 'type_ID': 'FLOOD', 'start_Date': 1},
-        {'uuid': 1, 'type_ID': 'foo', 'start_Date': 1},
-        {'uuid': 2, 'type_ID': 'FLOOD', 'start_Date': 2},
-        {'uuid': 3, 'type_ID': 'bar', 'start_Date': 2},
-        {'uuid': 4, 'type_ID': 'FLOOD', 'start_Date': 3},
-        {'uuid': 5, 'type_ID': 'baz', 'start_Date': 3},
+        {'uuid': 0, 'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 1},
+        {'uuid': 1, 'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'foo', 'start_Date': 1},
+        {'uuid': 2, 'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 2},
+        {'uuid': 3, 'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'bar', 'start_Date': 2},
+        {'uuid': 4, 'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 3},
+        {'uuid': 5, 'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'baz', 'start_Date': 3},
     ]
     assert hyp3_floods.filter_hazards(hazards, current_time_in_ms=0) == []
     assert hyp3_floods.filter_hazards(hazards, current_time_in_ms=1) == [hazards[0]]
@@ -180,13 +204,35 @@ def test_filter_hazards():
 
 
 def test_is_valid_hazard():
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 1}, current_time_in_ms=2) is True
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 2}, current_time_in_ms=2) is True
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'FLOOD', 'start_Date': 3}, current_time_in_ms=2) is False
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 1},
+        current_time_in_ms=2
+    ) is True
 
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 1}, current_time_in_ms=2) is False
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 2}, current_time_in_ms=2) is False
-    assert hyp3_floods.is_valid_hazard({'type_ID': 'foo', 'start_Date': 3}, current_time_in_ms=2) is False
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'foo', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 1},
+        current_time_in_ms=2
+    ) is False
+
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'foo', 'type_ID': 'FLOOD', 'start_Date': 1},
+        current_time_in_ms=2
+    ) is False
+
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'foo', 'start_Date': 1},
+        current_time_in_ms=2
+    ) is False
+
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 2},
+        current_time_in_ms=2
+    ) is True
+
+    assert hyp3_floods.is_valid_hazard(
+        {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 3},
+        current_time_in_ms=2
+    ) is False
 
 
 def test_get_aoi():
