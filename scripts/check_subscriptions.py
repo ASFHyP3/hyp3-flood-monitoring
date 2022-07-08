@@ -11,7 +11,7 @@ def count_updated_subscriptions(subscriptions: list[dict]) -> tuple[str, int]:
     current_end = max(subscription['search_parameters']['end'] for subscription in subscriptions)
     return (
         current_end,
-        sum(1 for subscription in subscriptions if subscription['search_parameters']['end'] == current_end)
+        sum(subscription['search_parameters']['end'] == current_end for subscription in subscriptions)
     )
 
 
