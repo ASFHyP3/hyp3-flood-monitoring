@@ -43,6 +43,7 @@ def parse_datetime(datetime_str: str) -> datetime:
 
 def get_summary(
         rows: list[Row],
+        now: str,
         job_count: int,
         active_hazards_count: int,
         active_hazards_timestamp: str,
@@ -57,10 +58,12 @@ def get_summary(
     assert sum([enabled_with_jobs, enabled_without_jobs, disabled_with_jobs, disabled_without_jobs]) == len(rows)
 
     return '\n'.join([
+        f'Current timestamp: {now}\n',
+
         f'Active hazards: {active_hazards_count}',
         f'  - Log message timestamp: {active_hazards_timestamp}\n',
 
-        f'From {_logs.START_DATETIME.isoformat()} to present:\n',
+        f'Summary from {_logs.START_DATETIME.isoformat()} to present:\n',
 
         f'Jobs: {job_count}\n',
 
@@ -118,15 +121,16 @@ def main(upload: bool) -> None:
     active_hazards_timestamp, active_hazards_count = _logs.get_active_hazards_count()
     aoi_changes_count = _logs.get_updated_aoi_count()
 
+    now = datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat()
     summary = get_summary(
         rows,
+        now=now,
         job_count=len(jobs),
         active_hazards_count=active_hazards_count,
         active_hazards_timestamp=active_hazards_timestamp,
         aoi_changes_count=aoi_changes_count
     )
 
-    now = datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat()
     csv_name = f'subscription-stats-{now}.csv'
     summary_name = f'subscription-stats-summary-{now}.txt'
 
