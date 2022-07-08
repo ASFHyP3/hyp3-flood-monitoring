@@ -50,24 +50,25 @@ def get_summary(rows: list[Row], job_count: int, active_hazard_count: int, aoi_c
 
     assert sum([enabled_with_jobs, enabled_without_jobs, disabled_with_jobs, disabled_without_jobs]) == len(rows)
 
+    # TODO active hazards timestamp
     return '\n'.join([
         f'Active hazards: {active_hazard_count}\n',
 
-        'Test system was deployed on 2022-06-06\n',
+        f'From {_logs.START_DATETIME.isoformat()} to present:\n',
 
-        f'Jobs to date: {job_count}',
-        f'Subscriptions to date: {len(rows)}',
+        f'Jobs: {job_count}\n',
+
+        f'Subscriptions: {len(rows)}',
         f'  - Active subscriptions with at least one job: {enabled_with_jobs}',
         f'  - Active subscriptions with no jobs: {enabled_without_jobs}',
         f'  - Expired subscriptions with at least one job: {disabled_with_jobs}',
         f'  - Expired subscriptions with no jobs: {disabled_without_jobs}\n',
 
+        f'AOI changes: {aoi_changes_count}\n',
+
         ('Note that the number of active subscriptions is greater than the number of active hazards, '
          'as a subscription remains active for a few days after the corresponding hazard expires, in case '
          'any new data becomes available that was acquired during the hazard\'s lifetime.\n'),
-
-        f'AOI changes to date: {aoi_changes_count}',
-        '  - Note that we started logging AOI changes on 2022-06-15\n',
     ])
 
 
