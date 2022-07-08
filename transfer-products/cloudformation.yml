@@ -40,9 +40,8 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
-                Action:
-                  - s3:PutObject
-                Resource: !Sub "arn:aws:s3:::${S3TargetBucket}"
+                Action: s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${S3TargetBucket}/*"
               - Effect: Allow
                 Action:
                   - logs:CreateLogStream
@@ -59,14 +58,13 @@ Resources:
           EARTHDATA_PASSWORD: !Ref EarthdataPassword
           S3_TARGET_BUCKET: !Ref S3TargetBucket
           S3_TARGET_PREFIX: !Ref S3TargetPrefix
-      Code: transfer-products/src/
+      Code: src/
       Handler: transfer_products.lambda_handler
-      MemorySize: 128
+      MemorySize: 1024
       Role: !GetAtt Role.Arn
       Runtime: python3.9
       Timeout: 900
       EphemeralStorage:
-        # TODO decide on appropriate size
         Size: 1024 # MB
 
   EventInvokeConfig:
