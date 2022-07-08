@@ -58,7 +58,7 @@ Resources:
           EARTHDATA_PASSWORD: !Ref EarthdataPassword
           S3_TARGET_BUCKET: !Ref S3TargetBucket
           S3_TARGET_PREFIX: !Ref S3TargetPrefix
-      Code: transfer-products/src/
+      Code: src/
       Handler: transfer_products.lambda_handler
       MemorySize: 128
       Role: !GetAtt Role.Arn
