@@ -41,7 +41,13 @@ def parse_datetime(datetime_str: str) -> datetime:
     return datetime.strptime(datetime_str, '%Y-%m-%dT%H:%M:%SZ')
 
 
-def get_summary(rows: list[Row], job_count: int, active_hazard_count: int, aoi_changes_count: int) -> str:
+def get_summary(
+        rows: list[Row],
+        job_count: int,
+        active_hazards_count: int,
+        active_hazards_timestamp: str,
+        aoi_changes_count: int) -> str:
+
     enabled_with_jobs = sum(row.enabled and row.jobs > 0 for row in rows)
     enabled_without_jobs = sum(row.enabled and row.jobs == 0 for row in rows)
 
@@ -50,9 +56,9 @@ def get_summary(rows: list[Row], job_count: int, active_hazard_count: int, aoi_c
 
     assert sum([enabled_with_jobs, enabled_without_jobs, disabled_with_jobs, disabled_without_jobs]) == len(rows)
 
-    # TODO active hazards timestamp
     return '\n'.join([
-        f'Active hazards: {active_hazard_count}\n',
+        f'Active hazards: {active_hazards_count}',
+        f'  - Log message timestamp: {active_hazards_timestamp}\n',
 
         f'From {_logs.START_DATETIME.isoformat()} to present:\n',
 
@@ -109,13 +115,14 @@ def main(upload: bool) -> None:
     rows = get_subscription_stats(subscriptions, job_subscription_ids)
 
     print('Querying logs')
-    _, active_hazard_count = _logs.get_active_hazards_count()
+    active_hazards_timestamp, active_hazards_count = _logs.get_active_hazards_count()
     aoi_changes_count = _logs.get_updated_aoi_count()
 
     summary = get_summary(
         rows,
         job_count=len(jobs),
-        active_hazard_count=active_hazard_count,
+        active_hazards_count=active_hazards_count,
+        active_hazards_timestamp=active_hazards_timestamp,
         aoi_changes_count=aoi_changes_count
     )
 
