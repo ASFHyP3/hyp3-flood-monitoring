@@ -60,7 +60,7 @@ Resources:
           S3_TARGET_PREFIX: !Ref S3TargetPrefix
       Code: src/
       Handler: transfer_products.lambda_handler
-      MemorySize: 200
+      MemorySize: 1024
       Role: !GetAtt Role.Arn
       Runtime: python3.9
       Timeout: 900
