@@ -61,12 +61,11 @@ Resources:
           S3_TARGET_PREFIX: !Ref S3TargetPrefix
       Code: src/
       Handler: transfer_products.lambda_handler
-      MemorySize: 128
+      MemorySize: 200
       Role: !GetAtt Role.Arn
       Runtime: python3.9
       Timeout: 900
       EphemeralStorage:
-        # TODO decide on appropriate size
         Size: 1024 # MB
 
   EventInvokeConfig:
