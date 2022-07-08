@@ -9,6 +9,7 @@ import hyp3_floods
 
 MOCK_ENV = {
     'PDC_HAZARDS_AUTH_TOKEN': 'test-token',
+    'HYP3_URL': 'test-url',
     'EARTHDATA_USERNAME': 'test-user',
     'EARTHDATA_PASSWORD': 'test-pass'
 }
@@ -42,14 +43,14 @@ def test_lambda_handler(
 
     hyp3_floods.lambda_handler(None, None)
 
-    mock_hyp3_api_class.assert_called_once_with(hyp3_floods.HYP3_URL_TEST, 'test-user', 'test-pass')
+    mock_hyp3_api_class.assert_called_once_with('test-url', 'test-user', 'test-pass')
     mock_get_active_hazards.assert_called_once_with('test-token')
     mock_get_current_time_in_ms.assert_called_once_with()
 
     end = '2022-05-27T16:29:04Z'
     assert mock_process_active_hazard.mock_calls == [
-        call(mock_hyp3_api, active_hazards[0], end),
-        call(mock_hyp3_api, active_hazards[2], end),
+        call(mock_hyp3_api, active_hazards[0], end, dry_run=False),
+        call(mock_hyp3_api, active_hazards[2], end, dry_run=False),
     ]
 
 
@@ -72,7 +73,7 @@ def test_process_active_hazard_submit():
     }
     end = 'test-end-datetime'
 
-    hyp3_floods.process_active_hazard(mock_hyp3, hazard, end)
+    hyp3_floods.process_active_hazard(mock_hyp3, hazard, end, dry_run=False)
 
     name = 'PDC-hazard-123'
     new_subscription = {
@@ -101,7 +102,7 @@ def test_process_active_hazard_submit():
     }
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with(name)
-    mock_hyp3.submit_subscription.assert_called_once_with(new_subscription)
+    mock_hyp3.submit_subscription.assert_called_once_with(new_subscription, validate_only=False)
 
 
 @patch('builtins.print')
@@ -126,7 +127,7 @@ def test_process_active_hazard_update(mock_print: MagicMock):
         'longitude': 2.0,
     }
 
-    hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime')
+    hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime', dry_run=False)
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
@@ -158,7 +159,7 @@ def test_process_active_hazard_duplicate_subscription_names():
     hazard = {'uuid': '123', 'start_Date': '1', 'latitude': '', 'longitude': ''}
 
     with pytest.raises(hyp3_floods.DuplicateSubscriptionNames):
-        hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime')
+        hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime', dry_run=False)
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
