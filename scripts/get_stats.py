@@ -155,7 +155,7 @@ def main(upload: bool) -> None:
         s3.Bucket(TARGET_BUCKET).upload_file(Filename=summary_name, Key=f'{now}/{summary_name}')
 
         download_link = lambda filename: \
-            f'https://{TARGET_BUCKET}.s3.us-west-2.amazonaws.com{urllib.parse.quote(f"/{now}/{filename}")}'
+            f'https://{TARGET_BUCKET}.s3.us-west-2.amazonaws.com{urllib.parse.quote(f"/{now}/{filename}")}'  # noqa: E731 E501
         msg = (
             f'Subscription stats (CSV):\n{download_link(csv_name)}\n\n'
             f'Summary (text):\n{download_link(summary_name)}\n\n'
