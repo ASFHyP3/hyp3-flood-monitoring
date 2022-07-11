@@ -1,4 +1,5 @@
 import argparse
+import urllib.parse
 from collections import namedtuple
 from datetime import datetime, timezone
 
@@ -97,10 +98,20 @@ def write_summary(summary: str, path: str) -> None:
     print(f'Wrote {path}')
 
 
+def publish_sns_message(topic_arn: str, msg: str) -> dict:
+    sns = boto3.client('sns')
+    return sns.publish(
+        TopicArn=topic_arn,
+        Message=msg,
+        Subject='HyP3/PDC flood monitoring stats',
+    )
+
+
 def main(upload: bool) -> None:
     hyp3_url = hyp3_floods.get_env_var('HYP3_URL')
     earthdata_username = hyp3_floods.get_env_var('EARTHDATA_USERNAME')
     earthdata_password = hyp3_floods.get_env_var('EARTHDATA_PASSWORD')
+    topic_arn = hyp3_floods.get_env_var('SNS_TOPIC_ARN')
 
     session = hyp3_floods.HyP3SubscriptionsAPI._get_hyp3_api_session(earthdata_username, earthdata_password)
     hyp3 = HyP3(hyp3_url, earthdata_username, earthdata_password)
@@ -142,6 +153,18 @@ def main(upload: bool) -> None:
         s3 = boto3.resource('s3')
         s3.Bucket(TARGET_BUCKET).upload_file(Filename=csv_name, Key=f'{now}/{csv_name}')
         s3.Bucket(TARGET_BUCKET).upload_file(Filename=summary_name, Key=f'{now}/{summary_name}')
+
+        download_link = lambda filename: \
+            f'https://{TARGET_BUCKET}.s3.us-west-2.amazonaws.com{urllib.parse.quote(f"/{now}/{filename}")}'
+        msg = (
+            f'Subscription stats (CSV):\n{download_link(csv_name)}\n\n'
+            f'Summary (text):\n{download_link(summary_name)}\n\n'
+            f'{"-" * 50}\n\n{summary}'
+        )
+
+        print('Publishing SNS message')
+        response = publish_sns_message(topic_arn, msg)
+        print(response)
 
 
 if __name__ == '__main__':
