@@ -13,7 +13,7 @@ import _logs
 
 TARGET_BUCKET = 'hyp3-flood-monitoring-stats'
 
-FIELDS = ('id', 'name', 'aoi', 'creation_date', 'start', 'end', 'delta', 'jobs', 'enabled')
+FIELDS = ('id', 'name', 'aoi', 'creation_date', 'start', 'end', 'duration_in_seconds', 'jobs', 'enabled')
 
 Row = namedtuple('Row', FIELDS)
 
@@ -30,7 +30,7 @@ def get_subscription_stats(subscriptions: list[dict], job_subscription_ids: list
             creation_date=subscription['creation_date'],
             start=start,
             end=end,
-            delta=parse_datetime(end) - parse_datetime(start),
+            duration_in_seconds=(parse_datetime(end) - parse_datetime(start)).total_seconds(),
             jobs=sum(job_sub_id == subscription['subscription_id'] for job_sub_id in job_subscription_ids),
             enabled=subscription['enabled'],
         ))
