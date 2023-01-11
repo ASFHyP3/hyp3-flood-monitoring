@@ -1,5 +1,8 @@
 # hyp3-flood-monitoring
 
-## Python version
+## Developer setup
 
-Requires Python 3.9.
+```
+conda env create -f environment.yml
+conda activate hyp3-flood-monitoring
+```
