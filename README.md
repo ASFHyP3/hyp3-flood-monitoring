@@ -1,5 +1,9 @@
 # hyp3-flood-monitoring
 
+## Architecture overview
+
+TODO
+
 ## Developer setup
 
 ```
@@ -40,3 +44,7 @@ team asks us to query their test API for a specific reason.
 The Hazard API authorization tokens are available in the `tools_user_accounts` secret in AWS Secrets Manager
 (in the HyP3 AWS account), via the secret keys `PDC Hazard API auth token (prod)`
 and `PDC Hazard API auth token (test)`.
+
+## TODO
+
+Document how to run the two lambda functions and the purpose of the `scripts` branch.
