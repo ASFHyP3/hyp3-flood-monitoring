@@ -2,7 +2,45 @@
 
 ## Architecture overview
 
-TODO
+The [Pacific Disaster Center](https://www.pdc.org/about) (PDC)
+provides a Hazard API (see [PDC Hazard API](#pdc-hazard-api)).
+The purpose of this project is to provide RTC products for areas of interest affected by active flood hazards.
+This is accomplished by maintaining a [HyP3 subscription](https://hyp3-docs.asf.alaska.edu/using/subscriptions/)
+for each active flood hazard.
+
+An AWS Lambda function runs periodically and executes the following steps:
+
+<ol>
+<li>
+Query the PDC Hazard API for a list of active flood hazards.
+</li>
+<li>
+For each hazard:
+  <ol type="a">
+  <li>
+    If there is no existing HyP3 subscription for the hazard, create one, and set its end datetime for 3 hours
+    into the future.
+  </li>
+  <li>
+    Otherwise, update the existing HyP3 subscription with any parameters that have changed (e.g. AOI),
+    and set its end datetime for 3 hours into the future.
+  </li>
+  </ol>
+</li>
+</ol>
+
+Note that when a hazard expires (becomes inactive), the following steps occur automatically:
+
+1. The hazard disappears from the list of active hazards returned by the PDC Hazard API.
+2. As a result, our system does not update the end datetime for the hazard's HyP3 subscription,
+   and the subscription is soon disabled.
+
+Note that a HyP3 subscription remains enabled for a few days beyond its end datetime,
+in case any new data becomes available that was acquired within the subscription's
+start and end datetime range. But no jobs will be submitted for data that was
+acquired after the subscription's end datetime.
+
+TODO: describe the architecture of the TransferProducts Lambda
 
 ## Developer setup
 
@@ -32,7 +70,7 @@ environment variables, and then add those variables to your `.env` file.)
 
 ## PDC Hazard API
 
-The Pacific Disaster Center (PDC) provides a Hazard API:
+PDC provides a Hazard API:
 
 * PDC Hazard API (production): <https://sentry.pdc.org/hp_srv/>
 * PDC Hazard API (test): <https://testsentry.pdc.org/hp_srv/>
@@ -47,4 +85,7 @@ and `PDC Hazard API auth token (test)`.
 
 ## TODO
 
-Document how to run the two lambda functions and the purpose of the `scripts` branch.
+* Document how to run the two lambda functions and the purpose of the `scripts` branch.
+* Explain the output of the `check_subscriptions` script.
+* Explain why there are always more enabled subscriptions than active hazards.
+* Perhaps clarify wording in the output of `generate_stats` to refer to *enabled* subscriptions and *active* hazards.

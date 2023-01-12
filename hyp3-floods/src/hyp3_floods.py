@@ -154,6 +154,7 @@ def get_start_datetime_str(
     return str_from_datetime(start_datetime)
 
 
+# TODO pull out the 3 hours as a constant and make a note to update the README if it changes; also see tests
 def get_end_datetime_str(current_time_in_ms: int, delta=timedelta(hours=3)) -> str:
     return str_from_datetime(datetime.fromtimestamp(current_time_in_ms // 1000, tz=timezone.utc) + delta)
 
