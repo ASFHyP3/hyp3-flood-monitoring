@@ -110,7 +110,7 @@ Each Lambda function takes a `.env` file as a command-line argument
 ## Additional scripts
 
 Additional scripts are provided on the
-[`scripts` branch](https://github.com/ASFHyP3/hyp3-flood-monitoring/tree/scripts).
+[`scripts`](https://github.com/ASFHyP3/hyp3-flood-monitoring/tree/scripts) branch.
 
 Before running these scripts, create a `.env` file as described in
 [Environment variables](#environment-variables).
