@@ -18,12 +18,12 @@ Query the PDC Hazard API for a list of active flood hazards.
 For each hazard:
   <ol type="a">
   <li>
-    If there is no existing HyP3 subscription for the hazard, create one, and set its end datetime for 3 hours
+    If there is no existing HyP3 subscription for the hazard, create one, and set its end datetime for a few hours
     into the future.
   </li>
   <li>
     Otherwise, update the existing HyP3 subscription with any parameters that have changed (e.g. AOI),
-    and set its end datetime for 3 hours into the future.
+    and set its end datetime for a few hours into the future.
   </li>
   </ol>
 </li>
