@@ -85,9 +85,31 @@ The Hazard API authorization tokens are available in the `tools_user_accounts` s
 (in the HyP3 AWS account), via the secret keys `PDC Hazard API auth token (prod)`
 and `PDC Hazard API auth token (test)`.
 
+## Running the Lambda functions locally
+
+You can locally execute the source code for the AWS Lambda functions, e.g. for debugging purposes. Each Lambda
+function is provided as a Python script with a command-line interface.
+
+To show the help text for the `hyp3-floods` Lambda function
+(for creating and updating HyP3 subscriptions):
+
+```
+python hyp3-floods/src/hyp3_floods.py -h
+```
+
+To show the help text for the `transfer-products` Lambda function
+(for archiving products by copying them to an S3 bucket):
+
+```
+python transfer-products/src/transfer_products.py -h
+```
+
+Each Lambda function takes a `.env` file as a command-line argument
+(see [Environment variables](#environment-variables)).
+
 ## TODO
 
-* Document how to run the two lambda functions and the purpose of the `scripts` branch.
+* Document the purpose of the `scripts` branch.
 * Explain the output of the `check_subscriptions` script.
 * Explain why there are always more enabled subscriptions than active hazards.
 * Perhaps clarify wording in the output of `generate_stats` to refer to *enabled* subscriptions and *active* hazards.
