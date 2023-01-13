@@ -69,15 +69,15 @@ def get_summary(
         f'Jobs: {job_count}\n',
 
         f'Subscriptions: {len(rows)}',
-        f'  - Active subscriptions with at least one job: {enabled_with_jobs}',
-        f'  - Active subscriptions with no jobs: {enabled_without_jobs}',
-        f'  - Expired subscriptions with at least one job: {disabled_with_jobs}',
-        f'  - Expired subscriptions with no jobs: {disabled_without_jobs}\n',
+        f'  - Enabled subscriptions with at least one job: {enabled_with_jobs}',
+        f'  - Enabled subscriptions with no jobs: {enabled_without_jobs}',
+        f'  - Disabled subscriptions with at least one job: {disabled_with_jobs}',
+        f'  - Disabled subscriptions with no jobs: {disabled_without_jobs}\n',
 
         f'AOI changes: {aoi_changes_count}\n',
 
-        ('Note that the number of active subscriptions is greater than the number of active hazards, '
-         'as a subscription remains active for a few days after the corresponding hazard expires, in case '
+        ('Note that the number of enabled subscriptions is greater than the number of active hazards, '
+         'as a subscription remains enabled for a few days after the corresponding hazard expires, in case '
          'any new data becomes available that was acquired during the hazard\'s lifetime.\n'),
     ])
 
