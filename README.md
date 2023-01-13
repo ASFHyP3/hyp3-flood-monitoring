@@ -107,9 +107,23 @@ python transfer-products/src/transfer_products.py -h
 Each Lambda function takes a `.env` file as a command-line argument
 (see [Environment variables](#environment-variables)).
 
-## TODO
+## Additional scripts
 
-* Document the purpose of the `scripts` branch.
-* Explain the output of the `check_subscriptions` script.
-* Explain why there are always more enabled subscriptions than active hazards.
-* Perhaps clarify wording in the output of `generate_stats` to refer to *enabled* subscriptions and *active* hazards.
+Additional scripts are provided on the
+[`scripts` branch](https://github.com/ASFHyP3/hyp3-flood-monitoring/tree/scripts).
+
+Before running these scripts, create a `.env` file as described in
+[Environment variables](#environment-variables).
+
+Also make sure you have an AWS config profile for the HyP3 account.
+
+You may want to run `check_subscriptions.py` periodically, in order to verify that
+the flood monitoring system is working as expected:
+
+```
+AWS_PROFILE=hyp3 PYTHONPATH=${PWD}/hyp3-floods/src python scripts/check_subscriptions.py <dotenv_path>
+```
+
+The `get_stats.py` script runs automatically as a GitHub Actions workflow, though you can run it locally
+if you wish. Its purpose is to generate certain statistics describing the operation of the flood
+monitoring system, which are made available to key stakeholders.
