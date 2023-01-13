@@ -40,7 +40,9 @@ in case any new data becomes available that was acquired within the subscription
 start and end datetime range. But no jobs will be submitted for data that was
 acquired after the subscription's end datetime.
 
-TODO: describe the architecture of the TransferProducts Lambda
+Additionally, a second AWS Lambda function runs periodically and copies any new RTC products
+that have been created by flood monitoring subscriptions into an S3 bucket for permanent
+archival.
 
 ## Developer setup
 
