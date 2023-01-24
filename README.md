@@ -114,7 +114,7 @@ Additional scripts are provided on the
 Before running these scripts, create a `.env` file as described in
 [Environment variables](#environment-variables).
 
-Also make sure you have an AWS config profile for the HyP3 account.
+Also, make sure you have an AWS config profile for the HyP3 account.
 
 You may want to run `check_subscriptions.py` periodically, in order to verify that
 the flood monitoring system is working as expected:
