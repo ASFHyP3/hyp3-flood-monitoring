@@ -37,8 +37,7 @@ Note that when a hazard expires (becomes inactive), the following steps occur au
 
 Note that a HyP3 subscription remains enabled for a few days beyond its end datetime,
 in case any new data becomes available that was acquired within the subscription's
-start and end datetime range. But no jobs will be submitted for data that was
-acquired after the subscription's end datetime.
+start and end datetime range. No jobs will be submitted for data acquired after the subscription's end datetime.
 
 Additionally, a second AWS Lambda function runs periodically and copies any new RTC products
 that have been created by flood monitoring subscriptions into an S3 bucket for permanent
