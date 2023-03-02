@@ -52,9 +52,19 @@ class HyP3SubscriptionsAPI:
         return response.json()
 
 
-def get_active_hazards(auth_token: str) -> list[dict]:
+def get_aoi(pdc_auth_token: str, hazard_id: int) -> str:
+    # TODO compare polygon aoi with point?
+    # return f'POINT({hazard["longitude"]} {hazard["latitude"]})'
+
+    url = f'{PDC_URL}/hp_srv/services/hazard/{hazard_id}/alertGeography'
+    response = requests.get(url, headers={'Authorization': f'Bearer {pdc_auth_token}'})
+    response.raise_for_status()
+    return response.json()['wkt']['text']
+
+
+def get_active_hazards(pdc_auth_token: str) -> list[dict]:
     url = f'{PDC_URL}/hp_srv/services/hazards/t/json/get_active_hazards'
-    response = requests.get(url, headers={'Authorization': f'Bearer {auth_token}'})
+    response = requests.get(url, headers={'Authorization': f'Bearer {pdc_auth_token}'})
     response.raise_for_status()
     return response.json()
 
@@ -80,19 +90,31 @@ def get_existing_subscription(hyp3: HyP3SubscriptionsAPI, name: str) -> Optional
     return subscriptions[0] if subscriptions else None
 
 
-def process_active_hazards(hyp3: HyP3SubscriptionsAPI, active_hazards: list[dict], end: str, dry_run: bool) -> None:
+def process_active_hazards(
+        pdc_auth_token: str,
+        hyp3: HyP3SubscriptionsAPI,
+        active_hazards: list[dict],
+        end: str,
+        dry_run: bool) -> None:
     for count, hazard in enumerate(active_hazards, start=1):
         print(f'({count}/{len(active_hazards)}) Processing hazard {hazard["uuid"]}')
         try:
-            process_active_hazard(hyp3, hazard, end, dry_run=dry_run)
+            process_active_hazard(pdc_auth_token, hyp3, hazard, end, dry_run=dry_run)
         except (requests.HTTPError, DuplicateSubscriptionNames) as e:
             print(f'Error while processing hazard {hazard["uuid"]}: {e}')
 
 
-def process_active_hazard(hyp3: HyP3SubscriptionsAPI, hazard: dict, end: str, dry_run: bool) -> None:
+def process_active_hazard(
+        pdc_auth_token: str,
+        hyp3: HyP3SubscriptionsAPI,
+        hazard: dict,
+        end: str,
+        dry_run: bool) -> None:
     name = subscription_name_from_hazard_uuid(hazard['uuid'])
     start = get_start_datetime_str(int(hazard['start_Date']))
-    aoi = get_aoi(hazard)
+
+    print(f'Fetching AOI for hazard ID: {hazard["hazard_ID"]}')
+    aoi = get_aoi(pdc_auth_token, hazard['hazard_ID'])
 
     print(f'Fetching existing subscription with name: {name}')
     existing_subscription = get_existing_subscription(hyp3, name)
@@ -127,11 +149,6 @@ def log_updates(existing_subscription: dict, new_start: str, new_aoi: str) -> No
 
     if existing_aoi != new_aoi:
         print(f'Updating AOI for subscription {subscription_id} from {existing_aoi} to {new_aoi}')
-
-
-def get_aoi(hazard: dict) -> str:
-    # TODO get real aoi
-    return f'POINT({hazard["longitude"]} {hazard["latitude"]})'
 
 
 def str_from_datetime(date_time: datetime) -> str:
@@ -210,7 +227,7 @@ def main(dry_run: bool) -> None:
     if dry_run:
         print('(DRY RUN)')
 
-    auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN')
+    pdc_auth_token = get_env_var('PDC_HAZARDS_AUTH_TOKEN')
     hyp3_url = get_env_var('HYP3_URL')
     earthdata_username = get_env_var('EARTHDATA_USERNAME')
     earthdata_password = get_env_var('EARTHDATA_PASSWORD')
@@ -222,7 +239,7 @@ def main(dry_run: bool) -> None:
     hyp3 = HyP3SubscriptionsAPI(hyp3_url, earthdata_username, earthdata_password)
 
     print('Fetching active hazards')
-    active_hazards = get_active_hazards(auth_token)
+    active_hazards = get_active_hazards(pdc_auth_token)
     print(f'Active hazards (before filtering): {len(active_hazards)}')
 
     current_time_in_ms = get_current_time_in_ms()
@@ -230,7 +247,7 @@ def main(dry_run: bool) -> None:
     print(f'Active hazards (after filtering): {len(active_hazards)}')
 
     end = get_end_datetime_str(current_time_in_ms)
-    process_active_hazards(hyp3, active_hazards, end, dry_run=dry_run)
+    process_active_hazards(pdc_auth_token, hyp3, active_hazards, end, dry_run=dry_run)
 
 
 if __name__ == '__main__':
