@@ -90,7 +90,7 @@ def test_process_active_hazard_submit(mock_get_aoi: MagicMock):
     mock_hyp3.get_subscriptions_by_name.return_value = {'subscriptions': []}
     mock_hyp3.submit_subscription.return_value = {'subscription': {'subscription_id': ''}}
 
-    mock_get_aoi.return_value = 'POINT(48.0 38.0)'
+    mock_get_aoi.return_value = 'POLYGON((48.0 38.0))'
 
     hazard = {
         'uuid': '123',
@@ -112,7 +112,7 @@ def test_process_active_hazard_submit(mock_get_aoi: MagicMock):
             'polarization': ['VV+VH'],
             'start': '2022-04-19T16:08:31Z',
             'end': end,
-            'intersectsWith': 'POINT(48.0 38.0)'
+            'intersectsWith': 'POLYGON((48.0 38.0))'
         },
         'job_specification': {
             'job_type': 'WATER_MAP',
@@ -143,13 +143,13 @@ def test_process_active_hazard_update(mock_get_aoi: MagicMock, mock_print: Magic
                 'subscription_id': 'test-subscription-id',
                 'search_parameters': {
                     'start': '2022-03-01T00:00:00Z',
-                    'intersectsWith': 'POINT(0.0 0.0)',
+                    'intersectsWith': 'POLYGON((0.0 0.0))',
                 }
             }
         ]
     }
 
-    mock_get_aoi.return_value = 'POINT(2.0 1.0)'
+    mock_get_aoi.return_value = 'POLYGON((2.0 1.0))'
 
     hazard = {
         'uuid': '123',
@@ -167,7 +167,7 @@ def test_process_active_hazard_update(mock_get_aoi: MagicMock, mock_print: Magic
         subscription_id='test-subscription-id',
         start='2022-06-14T23:00:00Z',
         end='test-end-datetime',
-        intersectsWith='POINT(2.0 1.0)',
+        intersectsWith='POLYGON((2.0 1.0))',
         enabled=True,
     )
 
@@ -178,7 +178,7 @@ def test_process_active_hazard_update(mock_get_aoi: MagicMock, mock_print: Magic
 
     assert call(
         'Updating AOI for subscription test-subscription-id '
-        'from POINT(0.0 0.0) to POINT(2.0 1.0)'
+        'from POLYGON((0.0 0.0)) to POLYGON((2.0 1.0))'
     ) in mock_print.mock_calls
 
 
