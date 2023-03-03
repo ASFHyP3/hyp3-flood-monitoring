@@ -53,9 +53,6 @@ class HyP3SubscriptionsAPI:
 
 
 def get_aoi(pdc_auth_token: str, hazard_id: int) -> str:
-    # TODO compare polygon aoi with point?
-    # return f'POINT({hazard["longitude"]} {hazard["latitude"]})'
-
     url = f'{PDC_URL}/hp_srv/services/hazard/{hazard_id}/alertGeography'
     response = requests.get(url, headers={'Authorization': f'Bearer {pdc_auth_token}'})
     response.raise_for_status()
