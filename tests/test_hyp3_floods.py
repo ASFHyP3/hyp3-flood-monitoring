@@ -73,8 +73,8 @@ def test_lambda_handler(
 
     end = '2022-05-27T16:29:04Z'
     assert mock_process_active_hazard.mock_calls == [
-        call(mock_hyp3_api, active_hazards[0], end, dry_run=False),
-        call(mock_hyp3_api, active_hazards[2], end, dry_run=False),
+        call('test-token', mock_hyp3_api, active_hazards[0], end, dry_run=False),
+        call('test-token', mock_hyp3_api, active_hazards[2], end, dry_run=False),
     ]
 
 
@@ -84,20 +84,24 @@ def test_lambda_handler_missing_env_var():
         hyp3_floods.lambda_handler(None, None)
 
 
-def test_process_active_hazard_submit():
+@patch('hyp3_floods.get_aoi')
+def test_process_active_hazard_submit(mock_get_aoi: MagicMock):
     mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
     mock_hyp3.get_subscriptions_by_name.return_value = {'subscriptions': []}
     mock_hyp3.submit_subscription.return_value = {'subscription': {'subscription_id': ''}}
 
+    mock_get_aoi.return_value = 'POLYGON((48.0 38.0))'
+
     hazard = {
         'uuid': '123',
+        'hazard_ID': 789,
         'start_Date': '1650388111000',
-        'latitude': 38.39,
-        'longitude': 47.94
     }
     end = 'test-end-datetime'
 
-    hyp3_floods.process_active_hazard(mock_hyp3, hazard, end, dry_run=False)
+    hyp3_floods.process_active_hazard('test-token', mock_hyp3, hazard, end, dry_run=False)
+
+    mock_get_aoi.assert_called_once_with('test-token', 789)
 
     name = 'PDC-hazard-123'
     new_subscription = {
@@ -108,7 +112,7 @@ def test_process_active_hazard_submit():
             'polarization': ['VV+VH'],
             'start': '2022-04-19T16:08:31Z',
             'end': end,
-            'intersectsWith': 'POINT(47.94 38.39)'
+            'intersectsWith': 'POLYGON((48.0 38.0))'
         },
         'job_specification': {
             'job_type': 'WATER_MAP',
@@ -130,7 +134,8 @@ def test_process_active_hazard_submit():
 
 
 @patch('builtins.print')
-def test_process_active_hazard_update(mock_print: MagicMock):
+@patch('hyp3_floods.get_aoi')
+def test_process_active_hazard_update(mock_get_aoi: MagicMock, mock_print: MagicMock):
     mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
     mock_hyp3.get_subscriptions_by_name.return_value = {
         'subscriptions': [
@@ -138,20 +143,23 @@ def test_process_active_hazard_update(mock_print: MagicMock):
                 'subscription_id': 'test-subscription-id',
                 'search_parameters': {
                     'start': '2022-03-01T00:00:00Z',
-                    'intersectsWith': 'POINT(0.0 0.0)',
+                    'intersectsWith': 'POLYGON((0.0 0.0))',
                 }
             }
         ]
     }
 
+    mock_get_aoi.return_value = 'POLYGON((2.0 1.0))'
+
     hazard = {
         'uuid': '123',
+        'hazard_ID': 789,
         'start_Date': '1655251200000',
-        'latitude': 1.0,
-        'longitude': 2.0,
     }
 
-    hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime', dry_run=False)
+    hyp3_floods.process_active_hazard('test-token', mock_hyp3, hazard, 'test-end-datetime', dry_run=False)
+
+    mock_get_aoi.assert_called_once_with('test-token', 789)
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
@@ -159,7 +167,7 @@ def test_process_active_hazard_update(mock_print: MagicMock):
         subscription_id='test-subscription-id',
         start='2022-06-14T23:00:00Z',
         end='test-end-datetime',
-        intersectsWith='POINT(2.0 1.0)',
+        intersectsWith='POLYGON((2.0 1.0))',
         enabled=True,
     )
 
@@ -170,20 +178,23 @@ def test_process_active_hazard_update(mock_print: MagicMock):
 
     assert call(
         'Updating AOI for subscription test-subscription-id '
-        'from POINT(0.0 0.0) to POINT(2.0 1.0)'
+        'from POLYGON((0.0 0.0)) to POLYGON((2.0 1.0))'
     ) in mock_print.mock_calls
 
 
-def test_process_active_hazard_duplicate_subscription_names():
+@patch('hyp3_floods.get_aoi')
+def test_process_active_hazard_duplicate_subscription_names(mock_get_aoi: MagicMock):
     mock_hyp3 = NonCallableMock(hyp3_floods.HyP3SubscriptionsAPI)
     mock_hyp3.get_subscriptions_by_name.return_value = {
         'subscriptions': [{'subscription_id': 'foo'}, {'subscription_id': 'bar'}]
     }
 
-    hazard = {'uuid': '123', 'start_Date': '1', 'latitude': '', 'longitude': ''}
+    hazard = {'uuid': '123', 'hazard_ID': 789, 'start_Date': '1'}
 
     with pytest.raises(hyp3_floods.DuplicateSubscriptionNames):
-        hyp3_floods.process_active_hazard(mock_hyp3, hazard, 'test-end-datetime', dry_run=False)
+        hyp3_floods.process_active_hazard('test-token', mock_hyp3, hazard, 'test-end-datetime', dry_run=False)
+
+    mock_get_aoi.assert_called_once_with('test-token', 789)
 
     mock_hyp3.get_subscriptions_by_name.assert_called_once_with('PDC-hazard-123')
 
@@ -233,11 +244,6 @@ def test_is_valid_hazard():
         {'category_ID': 'EVENT', 'severity_ID': 'WARNING', 'type_ID': 'FLOOD', 'start_Date': 3},
         current_time_in_ms=2
     ) is False
-
-
-def test_get_aoi():
-    hazard = {'latitude': 37.949, 'longitude': -90.4527}
-    assert hyp3_floods.get_aoi(hazard) == 'POINT(-90.4527 37.949)'
 
 
 def test_str_from_datetime():

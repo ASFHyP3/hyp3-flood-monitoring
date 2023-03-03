@@ -9,8 +9,9 @@ install-lambda-deps:
 	python -m pip install -r hyp3-floods/requirements.txt -t hyp3-floods/src/ && \
 	python -m pip install -r transfer-products/requirements.txt -t transfer-products/src/
 
+test_file ?= 'tests/'
 test:
-	pytest tests/
+	pytest $(test_file)
 
 static: flake8 cfn-lint
 
