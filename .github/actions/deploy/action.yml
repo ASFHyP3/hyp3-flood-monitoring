@@ -1,0 +1,60 @@
+name: Deploy HyP3 Flood Monitoring
+description: Deploy the HyP3 Flood Monitoring system
+
+inputs:
+  AWS_ACCESS_KEY_ID:
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+  CLOUDFORMATION_ROLE_ARN:
+    required: true
+  PDC_HAZARDS_AUTH_TOKEN:
+    required: true
+  HYP3_URL:
+    required: true
+  EARTHDATA_USERNAME:
+    required: true
+  EARTHDATA_PASSWORD:
+    required: true
+  S3_TARGET_BUCKET:
+    required: true
+  S3_TARGET_PREFIX:
+    required: true
+  STACK_NAME:
+    required: true
+  CF_TEMPLATE_BUCKET:
+    default: cf-templates-aubvn3i9olmk-us-west-2  # For HyP3 account
+
+runs:
+  using: composite
+  steps:
+    - uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    - uses: actions/setup-python@v3
+      with:
+        python-version: 3.9
+    - name: Install
+      shell: bash
+      run: make install-lambda-deps
+    - name: Package and deploy
+      shell: bash
+      run: |
+        aws cloudformation package \
+          --template-file cloudformation.yml \
+          --s3-bucket=${{ inputs.CF_TEMPLATE_BUCKET }} \
+          --output-template-file packaged.yml
+        aws cloudformation deploy \
+          --template-file packaged.yml \
+          --stack-name=${{ inputs.STACK_NAME }} \
+          --capabilities CAPABILITY_IAM \
+          --role-arn ${{ inputs.CLOUDFORMATION_ROLE_ARN }} \
+          --parameter-overrides \
+            PDCHazardsAuthToken=${{ inputs.PDC_HAZARDS_AUTH_TOKEN }} \
+            HyP3URL=${{ inputs.HYP3_URL }} \
+            EarthdataUsername=${{ inputs.EARTHDATA_USERNAME }} \
+            EarthdataPassword=${{ inputs.EARTHDATA_PASSWORD }} \
+            S3TargetBucket=${{ inputs.S3_TARGET_BUCKET }} \
+            S3TargetPrefix=${{ inputs.S3_TARGET_PREFIX }}
