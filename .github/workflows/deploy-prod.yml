@@ -1,6 +1,5 @@
 name: Deploy HyP3 Flood Monitoring Production
 
-# TODO branch prot rule for main?
 on:
   push:
     branches:
