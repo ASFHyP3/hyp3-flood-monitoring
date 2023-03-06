@@ -43,6 +43,18 @@ Additionally, a second AWS Lambda function runs periodically and copies any new 
 that have been created by flood monitoring subscriptions into an S3 bucket for permanent
 archival.
 
+## Important constants
+
+There are some important global constants defined in [`hyp3_floods.py`](./hyp3-floods/src/hyp3_floods.py):
+
+* `HAZARD_START_DATE_DELTA` allows us to set a HyP3 subscription start date for slightly
+  before the hazard start date, in case the hazard start date has an error margin.
+* `HAZARD_START_DATE_MINIMUM` prevents setting a HyP3 subscription start date before the
+  minimum date, so that we don't back-process a ton of data.
+
+We attempted to choose reasonable values for these constants, but we are open to changing them on request from
+the PDC team or other key stakeholders.
+
 ## Developer setup
 
 ```
