@@ -164,8 +164,8 @@ def str_from_datetime(date_time: datetime) -> str:
 
 def get_start_datetime_str(
         timestamp_in_ms: int,
-        delta=HAZARD_START_DATE_DELTA,
-        minimum=HAZARD_START_DATE_MINIMUM) -> str:
+        delta: timedelta = HAZARD_START_DATE_DELTA,
+        minimum: datetime = HAZARD_START_DATE_MINIMUM) -> str:
     start_datetime = max(
         datetime.fromtimestamp(timestamp_in_ms // 1000, tz=timezone.utc) - delta,
         minimum
