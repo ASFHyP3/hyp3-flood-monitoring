@@ -8,6 +8,13 @@ import requests
 
 PDC_URL = 'https://sentry.pdc.org'
 
+# Below constants are documented at
+# https://github.com/ASFHyP3/hyp3-flood-monitoring#important-constants
+
+HAZARD_START_DATE_DELTA = timedelta(hours=1)
+
+HAZARD_START_DATE_MINIMUM = datetime(2022, 1, 1, tzinfo=timezone.utc)
+
 
 class MissingEnvVar(Exception):
     pass
@@ -157,10 +164,8 @@ def str_from_datetime(date_time: datetime) -> str:
 
 def get_start_datetime_str(
         timestamp_in_ms: int,
-        delta=timedelta(hours=1),
-        minimum=datetime(2022, 1, 1, tzinfo=timezone.utc)) -> str:
-    # TODO decide on appropriate default value for delta
-    # TODO decide on appropriate default value for minimum
+        delta=HAZARD_START_DATE_DELTA,
+        minimum=HAZARD_START_DATE_MINIMUM) -> str:
     start_datetime = max(
         datetime.fromtimestamp(timestamp_in_ms // 1000, tz=timezone.utc) - delta,
         minimum
