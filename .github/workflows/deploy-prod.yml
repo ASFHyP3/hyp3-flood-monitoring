@@ -11,9 +11,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    environment:
-      name: prod
-
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/deploy
