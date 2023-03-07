@@ -2,6 +2,14 @@ name: Deploy HyP3 Flood Monitoring
 description: Deploy the HyP3 Flood Monitoring system
 
 inputs:
+  HYP3_URL:
+    required: true
+  S3_TARGET_BUCKET:
+    required: true
+  S3_TARGET_PREFIX:
+    required: true
+  STACK_NAME:
+    required: true
   AWS_ACCESS_KEY_ID:
     required: true
   AWS_SECRET_ACCESS_KEY:
@@ -10,17 +18,9 @@ inputs:
     required: true
   PDC_HAZARDS_AUTH_TOKEN:
     required: true
-  HYP3_URL:
-    required: true
   EARTHDATA_USERNAME:
     required: true
   EARTHDATA_PASSWORD:
-    required: true
-  S3_TARGET_BUCKET:
-    required: true
-  S3_TARGET_PREFIX:
-    required: true
-  STACK_NAME:
     required: true
   CF_TEMPLATE_BUCKET:
     default: cf-templates-aubvn3i9olmk-us-west-2  # For HyP3 account
