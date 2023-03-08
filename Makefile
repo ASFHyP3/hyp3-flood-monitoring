@@ -2,15 +2,16 @@ export PYTHONPATH = ${PWD}/hyp3-floods/src:${PWD}/transfer-products/src
 
 install:
 	python -m pip install --upgrade pip && \
-	python -m pip install -r requirements.txt
+	python -m pip install -r requirements-all.txt
 
 install-lambda-deps:
 	python -m pip install --upgrade pip && \
-	python -m pip install -r hyp3-floods/requirements.txt -t hyp3-floods/src/ && \
-	python -m pip install -r transfer-products/requirements.txt -t transfer-products/src/
+	python -m pip install -r requirements-hyp3-floods.txt -t hyp3-floods/src/ && \
+	python -m pip install -r requirements-transfer-products.txt -t transfer-products/src/
 
+test_file ?= 'tests/'
 test:
-	pytest tests/
+	pytest $(test_file)
 
 static: flake8 cfn-lint
 
