@@ -1,0 +1,6 @@
+name: hyp3-flood-monitoring
+dependencies:
+  - python=3.9
+  - pip
+  - pip:
+      - -r requirements-all.txt
