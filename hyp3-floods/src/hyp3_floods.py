@@ -8,6 +8,7 @@ import requests
 
 PDC_URL = 'https://sentry.pdc.org'
 
+# This value was chosen arbitrarily.
 HAZARD_END_DATE_DELTA = timedelta(hours=3)
 
 # Below constants are documented at
