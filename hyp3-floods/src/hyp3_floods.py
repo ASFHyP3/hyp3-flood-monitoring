@@ -8,6 +8,9 @@ import requests
 
 PDC_URL = 'https://sentry.pdc.org'
 
+# This value was chosen arbitrarily.
+HAZARD_END_DATE_DELTA = timedelta(hours=3)
+
 # Below constants are documented at
 # https://github.com/ASFHyP3/hyp3-flood-monitoring#important-constants
 
@@ -173,7 +176,7 @@ def get_start_datetime_str(
     return str_from_datetime(start_datetime)
 
 
-def get_end_datetime_str(current_time_in_ms: int, delta=timedelta(hours=3)) -> str:
+def get_end_datetime_str(current_time_in_ms: int, delta: timedelta = HAZARD_END_DATE_DELTA) -> str:
     return str_from_datetime(datetime.fromtimestamp(current_time_in_ms // 1000, tz=timezone.utc) + delta)
 
 
