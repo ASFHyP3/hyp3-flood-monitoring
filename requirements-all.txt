@@ -1,0 +1,6 @@
+-r requirements-hyp3-floods.txt
+-r requirements-transfer-products.txt
+cfn-lint
+flake8
+pytest
+python-dotenv
