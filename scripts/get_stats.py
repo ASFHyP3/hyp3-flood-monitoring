@@ -47,8 +47,7 @@ def get_summary(
         now: str,
         job_count: int,
         active_hazards_count: int,
-        active_hazards_timestamp: str,
-        aoi_changes_count: int) -> str:
+        active_hazards_timestamp: str) -> str:
 
     enabled_with_jobs = sum(row.enabled and row.jobs > 0 for row in rows)
     enabled_without_jobs = sum(row.enabled and row.jobs == 0 for row in rows)
@@ -64,8 +63,6 @@ def get_summary(
         f'Active hazards: {active_hazards_count}',
         f'  - Log message timestamp: {active_hazards_timestamp}\n',
 
-        f'Summary from {_logs.START_DATETIME.isoformat()} to present:\n',
-
         f'Jobs: {job_count}\n',
 
         f'Subscriptions: {len(rows)}',
@@ -73,8 +70,6 @@ def get_summary(
         f'  - Enabled subscriptions with no jobs: {enabled_without_jobs}',
         f'  - Disabled subscriptions with at least one job: {disabled_with_jobs}',
         f'  - Disabled subscriptions with no jobs: {disabled_without_jobs}\n',
-
-        f'AOI changes: {aoi_changes_count}\n',
 
         ('Note that the number of enabled subscriptions is greater than the number of active hazards, '
          'as a subscription remains enabled for a few days after the corresponding hazard expires, in case '
@@ -113,6 +108,16 @@ def main(upload: bool) -> None:
     earthdata_password = hyp3_floods.get_env_var('EARTHDATA_PASSWORD')
     topic_arn = hyp3_floods.get_env_var('SNS_TOPIC_ARN')
 
+    print(f'HyP3 API URL: {hyp3_url}')
+    print(f'Earthdata user: {earthdata_username}\n')
+
+    if 'hyp3-test-api' in hyp3_url:
+        log_group = '/aws/lambda/hyp3-flood-monitoring-test-Lambda-XUnL4S4ZZ2Cn'
+    elif 'hyp3-watermap' in hyp3_url:
+        log_group = '/aws/lambda/hyp3-flood-monitoring-Lambda-q7JXd48mgEhC'
+    else:
+        raise ValueError('HyP3 URL not recognized')
+
     session = hyp3_floods.HyP3SubscriptionsAPI._get_hyp3_api_session(earthdata_username, earthdata_password)
     hyp3 = HyP3(hyp3_url, earthdata_username, earthdata_password)
 
@@ -129,8 +134,7 @@ def main(upload: bool) -> None:
     rows = get_subscription_stats(subscriptions, job_subscription_ids)
 
     print('Querying logs')
-    active_hazards_timestamp, active_hazards_count = _logs.get_active_hazards_count()
-    aoi_changes_count = _logs.get_updated_aoi_count()
+    active_hazards_timestamp, active_hazards_count = _logs.get_active_hazards_count(log_group)
 
     now = datetime.now(tz=timezone.utc).replace(microsecond=0).isoformat()
     summary = get_summary(
@@ -139,7 +143,6 @@ def main(upload: bool) -> None:
         job_count=len(jobs),
         active_hazards_count=active_hazards_count,
         active_hazards_timestamp=active_hazards_timestamp,
-        aoi_changes_count=aoi_changes_count
     )
 
     csv_name = f'subscription-stats-{now}.csv'
