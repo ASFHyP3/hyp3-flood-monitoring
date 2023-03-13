@@ -1,0 +1,39 @@
+name: Generate Stats
+description: Generate Stats
+
+inputs:
+  HYP3_URL:
+    required: true
+  EARTHDATA_USERNAME:
+    required: true
+  EARTHDATA_PASSWORD:
+    required: true
+  GENERATE_STATS_AWS_ACCESS_KEY_ID:
+    required: true
+  GENERATE_STATS_AWS_SECRET_ACCESS_KEY:
+    required: true
+  SNS_TOPIC_ARN:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: scripts
+    - uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ env.GENERATE_STATS_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.GENERATE_STATS_AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    - uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip && \
+        python -m pip install -r scripts/requirements.txt
+    - name: Get stats
+      shell: bash
+      run: PYTHONPATH=${PWD}/hyp3-floods/src python scripts/get_stats.py --upload
