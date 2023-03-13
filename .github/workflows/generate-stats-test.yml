@@ -1,0 +1,18 @@
+name: Generate Stats for Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/generate-stats
+        with:
+          HYP3_URL: https://hyp3-test-api.asf.alaska.edu
+          EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
+          EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
+          GENERATE_STATS_AWS_ACCESS_KEY_ID: ${{ secrets.GENERATE_STATS_AWS_ACCESS_KEY_ID }}
+          GENERATE_STATS_AWS_SECRET_ACCESS_KEY: ${{ secrets.GENERATE_STATS_AWS_SECRET_ACCESS_KEY }}
+          SNS_TOPIC_ARN: ${{ secrets.SNS_TOPIC_ARN }}
