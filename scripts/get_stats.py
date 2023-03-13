@@ -47,7 +47,8 @@ def get_summary(
         now: str,
         job_count: int,
         active_hazards_count: int,
-        active_hazards_timestamp: str) -> str:
+        active_hazards_timestamp: str,
+        deployment_name: str) -> str:
 
     enabled_with_jobs = sum(row.enabled and row.jobs > 0 for row in rows)
     enabled_without_jobs = sum(row.enabled and row.jobs == 0 for row in rows)
@@ -58,6 +59,8 @@ def get_summary(
     assert sum([enabled_with_jobs, enabled_without_jobs, disabled_with_jobs, disabled_without_jobs]) == len(rows)
 
     return '\n'.join([
+        f'Stats for HyP3 Flood Monitoring ({deployment_name})\n',
+
         f'Current timestamp: {now}\n',
 
         f'Active hazards: {active_hazards_count}',
@@ -93,12 +96,12 @@ def write_summary(summary: str, path: str) -> None:
     print(f'Wrote {path}')
 
 
-def publish_sns_message(topic_arn: str, msg: str) -> dict:
+def publish_sns_message(topic_arn: str, msg: str, subject: str) -> dict:
     sns = boto3.client('sns')
     return sns.publish(
         TopicArn=topic_arn,
         Message=msg,
-        Subject='HyP3/PDC flood monitoring stats',
+        Subject=subject,
     )
 
 
@@ -113,8 +116,10 @@ def main(upload: bool) -> None:
 
     if 'hyp3-test-api' in hyp3_url:
         log_group = '/aws/lambda/hyp3-flood-monitoring-test-Lambda-XUnL4S4ZZ2Cn'
+        deployment_name = 'test'
     elif 'hyp3-watermap' in hyp3_url:
         log_group = '/aws/lambda/hyp3-flood-monitoring-Lambda-q7JXd48mgEhC'
+        deployment_name = 'prod'
     else:
         raise ValueError('HyP3 URL not recognized')
 
@@ -143,10 +148,11 @@ def main(upload: bool) -> None:
         job_count=len(jobs),
         active_hazards_count=active_hazards_count,
         active_hazards_timestamp=active_hazards_timestamp,
+        deployment_name=deployment_name,
     )
 
-    csv_name = f'subscription-stats-{now}.csv'
-    summary_name = f'subscription-stats-summary-{now}.txt'
+    csv_name = f'{deployment_name}-subscription-stats-{now}.csv'
+    summary_name = f'{deployment_name}-subscription-stats-summary-{now}.txt'
 
     write_csv([FIELDS, *rows], csv_name)
     write_summary(summary, summary_name)
@@ -164,9 +170,10 @@ def main(upload: bool) -> None:
             f'Summary (text):\n{download_link(summary_name)}\n\n'
             f'{"-" * 50}\n\n{summary}'
         )
+        subject = f'HyP3/PDC flood monitoring stats ({deployment_name})'
 
         print('Publishing SNS message')
-        response = publish_sns_message(topic_arn, msg)
+        response = publish_sns_message(topic_arn, msg, subject)
         print(response)
 
 
