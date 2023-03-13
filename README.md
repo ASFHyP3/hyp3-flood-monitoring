@@ -135,6 +135,14 @@ the flood monitoring system is working as expected:
 AWS_PROFILE=hyp3 PYTHONPATH=${PWD}/hyp3-floods/src python scripts/check_subscriptions.py <dotenv_path>
 ```
 
-The `get_stats.py` script runs automatically as a GitHub Actions workflow, though you can run it locally
+The `get_stats.py` script is intended to run as a GitHub Actions workflow, though you can run it locally
 if you wish. Its purpose is to generate certain statistics describing the operation of the flood
 monitoring system, which are made available to key stakeholders.
+
+To run the script via GitHub Actions, navigate to the Actions console for this repo,
+select the "Generate Stats" workflow for either test or prod (depending on whether
+you wish to generate stats for the test or prod flood monitoring system), and then
+manually run the workflow.
+
+The script will make the stats available by publishing a message to an AWS SNS topic, which
+has been created manually (not via CloudFormation) in the HyP3 AWS account.
