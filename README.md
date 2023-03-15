@@ -4,7 +4,9 @@
 temporarily disabled until key stakeholders are ready to make use of the data. We have
 set the HyP3 job quota for the `hyp3_flood_monitoring` user to `0` so that no new jobs
 will be run for flood monitoring subscriptions (but the flood monitoring system will
-continue to check for active hazards and create subscriptions).
+continue to check for active hazards and create subscriptions). We have also deleted
+the archived data and disabled the schedule rule that triggered the `TransferProducts` Lambda
+function (see [transfer-products/cloudformation.yml](transfer-products/cloudformation.yml)).
 
 To re-enable the test and prod flood monitoring systems, follow these steps:
 
@@ -17,6 +19,14 @@ To re-enable the test and prod flood monitoring systems, follow these steps:
    with `max_jobs_per_month` set to `0`.
 3. Edit the `max_jobs_per_month` field and set it to an appropriate value, depending on how much data we want
    the flood monitoring system to produce.
+4. Navigate to CloudFormation > Stacks and select the appropriate stack for either test or prod (see the
+   `STACK_NAME` parameter in [deploy-test.yml](./.github/workflows/deploy-test.yml) or
+   [deploy-prod.yml](./.github/workflows/deploy-prod.yml)).
+5. After selecting the stack, navigate to Resources and select the TransferProducts stack, then navigate to
+   Resources and select the Schedule resource. This should open an Amazon EventBridge Rule with an Event schedule,
+   and the Rule should have a Status of Disabled.
+6. Click the Enable button to re-enable the rule. Confirm that the corresponding Lambda function resumes
+   running automatically at the appropriate interval.
 
 ## Architecture overview
 
