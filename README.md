@@ -1,9 +1,10 @@
 # hyp3-flood-monitoring
 
-⚠️Important: The test and prod flood monitoring systems have been temporarily disabled until key stakeholders
-are ready to make use of the data. We have set the HyP3 job quota for the `hyp3_flood_monitoring` user to `0`
-so that no new jobs will be run for flood monitoring subscriptions (but the flood monitoring system will continue
-to check for active hazards and create subscriptions).
+⚠️Important: As of March 14, 2023, the test and prod flood monitoring systems have been
+temporarily disabled until key stakeholders are ready to make use of the data. We have
+set the HyP3 job quota for the `hyp3_flood_monitoring` user to `0` so that no new jobs
+will be run for flood monitoring subscriptions (but the flood monitoring system will
+continue to check for active hazards and create subscriptions).
 
 To re-enable the test and prod flood monitoring systems, follow these steps:
 
