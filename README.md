@@ -1,5 +1,22 @@
 # hyp3-flood-monitoring
 
+⚠️Important: The test and prod flood monitoring systems have been temporarily disabled until key stakeholders
+are ready to make use of the data. We have set the HyP3 job quota for the `hyp3_flood_monitoring` user to `0`
+so that no new jobs will be run for flood monitoring subscriptions (but the flood monitoring system will continue
+to check for active hazards and create subscriptions).
+
+To re-enable the test and prod flood monitoring systems, follow these steps:
+
+1. Identify the HyP3 deployment used by the flood monitoring system. For test,
+   this is the HyP3 deployment that corresponds to the URL given by the `HYP3_URL` parameter in the
+   [deploy-test.yml](./.github/workflows/deploy-test.yml) workflow. For prod, see the same parameter in the
+   [deploy-prod.yml](./.github/workflows/deploy-prod.yml) workflow.
+2. Log in to the AWS account corresponding to that HyP3 deployment, navigate to the DynamoDB console,
+   select the HyP3 Users Table, and confirm that there is an item for the `hyp3_flood_monitoring` user
+   with `max_jobs_per_month` set to `0`.
+3. Edit the `max_jobs_per_month` field and set it to an appropriate value, depending on how much data we want
+   the flood monitoring system to produce.
+
 ## Architecture overview
 
 The [Pacific Disaster Center](https://www.pdc.org/about) (PDC)
