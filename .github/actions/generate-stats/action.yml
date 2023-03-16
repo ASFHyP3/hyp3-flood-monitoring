@@ -23,8 +23,8 @@ runs:
         ref: scripts
     - uses: aws-actions/configure-aws-credentials@v2
       with:
-        aws-access-key-id: ${{ env.GENERATE_STATS_AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ env.GENERATE_STATS_AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ inputs.GENERATE_STATS_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ inputs.GENERATE_STATS_AWS_SECRET_ACCESS_KEY }}
         aws-region: us-west-2
     - uses: actions/setup-python@v4
       with:
@@ -36,4 +36,10 @@ runs:
         python -m pip install -r scripts/requirements.txt
     - name: Get stats
       shell: bash
-      run: PYTHONPATH=${PWD}/hyp3-floods/src python scripts/get_stats.py --upload
+      run: |
+        HYP3_URL=${{ inputs.HYP3_URL }} \
+        EARTHDATA_USERNAME=${{ inputs.EARTHDATA_USERNAME }} \
+        EARTHDATA_PASSWORD=${{ inputs.EARTHDATA_PASSWORD }} \
+        SNS_TOPIC_ARN=${{ inputs.SNS_TOPIC_ARN }} \
+        PYTHONPATH=${PWD}/hyp3-floods/src \
+        python scripts/get_stats.py --upload
