@@ -87,6 +87,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties:
       ScheduleExpression: "rate(15 minutes)"
+      State: DISABLED # https://github.com/ASFHyP3/hyp3-flood-monitoring/issues/38
       Targets:
         - Arn: !GetAtt Lambda.Arn
           Id: lambda
