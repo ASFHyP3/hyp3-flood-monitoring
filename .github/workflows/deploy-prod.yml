@@ -25,6 +25,7 @@ jobs:
           PDC_HAZARDS_AUTH_TOKEN: ${{ secrets.PDC_HAZARDS_AUTH_TOKEN }}
           EARTHDATA_USERNAME: ${{ secrets.EARTHDATA_USERNAME }}
           EARTHDATA_PASSWORD: ${{ secrets.EARTHDATA_PASSWORD }}
+          PROCESSING_STATE: ENABLED
 
   call-bump-version-workflow:
     needs: deploy

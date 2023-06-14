@@ -22,6 +22,8 @@ inputs:
     required: true
   EARTHDATA_PASSWORD:
     required: true
+  PROCESSING_STATE:
+    required: true
   CF_TEMPLATE_BUCKET:
     default: cf-templates-aubvn3i9olmk-us-west-2  # For HyP3 account
 
@@ -57,4 +59,5 @@ runs:
             EarthdataUsername=${{ inputs.EARTHDATA_USERNAME }} \
             EarthdataPassword=${{ inputs.EARTHDATA_PASSWORD }} \
             S3TargetBucket=${{ inputs.S3_TARGET_BUCKET }} \
-            S3TargetPrefix=${{ inputs.S3_TARGET_PREFIX }}
+            S3TargetPrefix=${{ inputs.S3_TARGET_PREFIX }} \
+            ProcessingState=${{ inputs.PROCESSING_STATE }}
