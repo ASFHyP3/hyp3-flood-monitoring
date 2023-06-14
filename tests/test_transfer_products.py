@@ -53,19 +53,27 @@ EXTENSIONS = ['.ext1', '.ext2', '.ext3']
 EXPECTED_OBJECTS_TO_COPY = [
     transfer_products.ObjectToCopy(
         url='url-base/path/to/filename-5A87.ext1',
-        target_key='target-prefix/name-foo/job-0/filename-5A87.ext1',
+        target_key='target-prefix/filename-5A87.ext1',
+    ),
+    transfer_products.ObjectToCopy(
+        url='url-base/path/to/filename-5A87.ext2',
+        target_key='target-prefix/filename-5A87.ext2'
     ),
     transfer_products.ObjectToCopy(
         url='url-base/path/to/filename-5A87.ext3',
-        target_key='target-prefix/name-foo/job-0/filename-5A87.ext3',
+        target_key='target-prefix/filename-5A87.ext3',
+    ),
+    transfer_products.ObjectToCopy(
+        url='url-base/path/to/filename-C054.ext1',
+        target_key='target-prefix/filename-C054.ext1'
     ),
     transfer_products.ObjectToCopy(
         url='url-base/path/to/filename-C054.ext2',
-        target_key='target-prefix/name-bar/job-1/filename-C054.ext2',
+        target_key='target-prefix/filename-C054.ext2',
     ),
     transfer_products.ObjectToCopy(
         url='url-base/path/to/filename-C054.ext3',
-        target_key='target-prefix/name-bar/job-1/filename-C054.ext3',
+        target_key='target-prefix/filename-C054.ext3',
     ),
 ]
 
