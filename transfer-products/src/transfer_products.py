@@ -53,7 +53,6 @@ def get_objects_to_copy(
             assert url.endswith(filename)
 
             target_key = f'{target_prefix}/{filename}'
-
             if target_key not in existing_objects:
                 objects_to_copy.append(ObjectToCopy(url=url, target_key=target_key))
 
