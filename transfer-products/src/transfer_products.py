@@ -52,7 +52,7 @@ def get_objects_to_copy(
             url = zip_url.removesuffix('.zip') + ext
             assert url.endswith(filename)
 
-            target_key = '/'.join([target_prefix, job.name, job.job_id, filename])
+            target_key = f'{target_prefix}/{filename}'
             if target_key not in existing_objects:
                 objects_to_copy.append(ObjectToCopy(url=url, target_key=target_key))
 
