@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.1]
 ### Changed
-- The prefix structure of the product.
+- `transfer_products.py` no longer includes the job name or job ID in the target S3 key
+
 ## [0.2.0]
 ### Changed
 - The `generate-stats` action can now be triggered manually for either test or prod. Automatic workflow
