@@ -1,10 +1,5 @@
 # hyp3-flood-monitoring
 
-⚠️ **Important:** As of March 14, 2023, the test and prod flood monitoring systems have been
-temporarily disabled until key stakeholders are ready to make use of the data. See
-https://github.com/ASFHyP3/hyp3-flood-monitoring/issues/38 for more details,
-including instructions for re-enabling processing.
-
 ## Architecture overview
 
 The [Pacific Disaster Center](https://www.pdc.org/about) (PDC)
