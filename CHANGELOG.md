@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.1]
 ### Changed
-- `transfer-products` lambda now runs every 30 minutes instead of every six hours.
+- `transfer-products` now runs every 30 minutes instead of every six hours.
+- `transfer-products` no longer transfers the `dem.tif` product.
 
 ## [0.4.0]
 ### Changed
