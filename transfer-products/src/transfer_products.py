@@ -77,7 +77,8 @@ def copy_object(source_bucket, source_key, target_bucket, target_key, chunk_size
     bucket = S3.Bucket(target_bucket)
     copy_source = {'Bucket': source_bucket, 'Key': source_key}
     transfer_config = TransferConfig(multipart_threshold=chunk_size, multipart_chunksize=chunk_size)
-    bucket.copy(CopySource=copy_source, Key=target_key, Config=transfer_config)
+    extra_args = {'TaggingDirective': 'REPLACE'}
+    bucket.copy(CopySource=copy_source, Key=target_key, Config=transfer_config, ExtraArgs=extra_args)
 
 
 def get_env_var(name: str) -> str:
