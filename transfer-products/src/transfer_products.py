@@ -10,7 +10,7 @@ from boto3.s3.transfer import TransferConfig
 S3 = boto3.resource('s3')
 
 # TODO decide on appropriate extensions
-EXTENSIONS = ['_VV.tif', '_VH.tif', '_rgb.tif', '_dem.tif', '_WM.tif', '.README.md.txt']
+EXTENSIONS = ['_VV.tif', '_VH.tif', '_rgb.tif', '_WM.tif', '.README.md.txt']
 
 
 @dataclass(frozen=True)
