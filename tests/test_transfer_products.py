@@ -25,8 +25,10 @@ JOBS = hyp3_sdk.Batch([
         user_id='user-id',
         name='name-foo',
         files=[{
-            'filename': 'filename-5A87.zip',
-            'url': 'url-base/path/to/filename-5A87.zip',
+            's3': {
+                'bucket': 'source-bucket',
+                'key': 'path/to/filename-5A87.zip',
+            }
         }],
     ),
     hyp3_sdk.Job(
@@ -37,35 +39,41 @@ JOBS = hyp3_sdk.Batch([
         user_id='user-id',
         name='name-bar',
         files=[{
-            'filename': 'filename-C054.zip',
-            'url': 'url-base/path/to/filename-C054.zip',
+            's3': {
+                'bucket': 'source-bucket',
+                'key': 'path/to/filename-C054.zip',
+            }
         }],
     ),
 ])
 
 EXISTING_OBJECTS = frozenset({
-    'target-prefix/name-foo/job-0/filename-5A87.ext2',
-    'target-prefix/name-bar/job-1/filename-C054.ext1',
+    'target-prefix/filename-5A87.ext2',
+    'target-prefix/filename-C054.ext1',
 })
 
 EXTENSIONS = ['.ext1', '.ext2', '.ext3']
 
 EXPECTED_OBJECTS_TO_COPY = [
     transfer_products.ObjectToCopy(
-        url='url-base/path/to/filename-5A87.ext1',
-        target_key='target-prefix/name-foo/job-0/filename-5A87.ext1',
+        source_bucket='source-bucket',
+        source_key='path/to/filename-5A87.ext1',
+        target_key='target-prefix/filename-5A87.ext1',
     ),
     transfer_products.ObjectToCopy(
-        url='url-base/path/to/filename-5A87.ext3',
-        target_key='target-prefix/name-foo/job-0/filename-5A87.ext3',
+        source_bucket='source-bucket',
+        source_key='path/to/filename-5A87.ext3',
+        target_key='target-prefix/filename-5A87.ext3',
     ),
     transfer_products.ObjectToCopy(
-        url='url-base/path/to/filename-C054.ext2',
-        target_key='target-prefix/name-bar/job-1/filename-C054.ext2',
+        source_bucket='source-bucket',
+        source_key='path/to/filename-C054.ext2',
+        target_key='target-prefix/filename-C054.ext2',
     ),
     transfer_products.ObjectToCopy(
-        url='url-base/path/to/filename-C054.ext3',
-        target_key='target-prefix/name-bar/job-1/filename-C054.ext3',
+        source_bucket='source-bucket',
+        source_key='path/to/filename-C054.ext3',
+        target_key='target-prefix/filename-C054.ext3',
     ),
 ]
 
@@ -90,7 +98,9 @@ def test_lambda_handler(mock_get_existing_objects: MagicMock, mock_copy_object: 
     mock_hyp3.find_jobs.assert_called_once_with(status_code='SUCCEEDED')
     mock_get_existing_objects.assert_called_once_with('target-bucket', 'target-prefix')
 
-    assert mock_copy_object.mock_calls == [call(obj, 'target-bucket') for obj in EXPECTED_OBJECTS_TO_COPY]
+    assert mock_copy_object.mock_calls == [
+        call(obj.source_bucket, obj.source_key, 'target-bucket', obj.target_key) for obj in EXPECTED_OBJECTS_TO_COPY
+    ]
 
 
 @patch.dict(os.environ, {}, clear=True)

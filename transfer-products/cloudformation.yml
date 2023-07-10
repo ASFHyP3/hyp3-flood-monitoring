@@ -17,6 +17,12 @@ Parameters:
   S3TargetPrefix:
     Type: String
 
+  ProcessingState:
+    Type: String
+    AllowedValues:
+      - ENABLED
+      - DISABLED
+
 Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
@@ -39,6 +45,12 @@ Resources:
           PolicyDocument:
             Version: 2012-10-17
             Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: arn:aws:s3:::*
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub "arn:aws:s3:::${S3TargetBucket}"
               - Effect: Allow
                 Action: s3:PutObject
                 Resource: !Sub "arn:aws:s3:::${S3TargetBucket}/*"
@@ -64,8 +76,6 @@ Resources:
       Role: !GetAtt Role.Arn
       Runtime: python3.9
       Timeout: 900
-      EphemeralStorage:
-        Size: 1024 # MB
 
   EventInvokeConfig:
     Type: AWS::Lambda::EventInvokeConfig
@@ -77,8 +87,8 @@ Resources:
   Schedule:
     Type: AWS::Events::Rule
     Properties:
-      ScheduleExpression: "rate(6 hours)"  # TODO decide on appropriate rate
-      State: DISABLED # https://github.com/ASFHyP3/hyp3-flood-monitoring/issues/38
+      ScheduleExpression: "rate(30 minutes)"
+      State: !Ref ProcessingState
       Targets:
         - Arn: !GetAtt Lambda.Arn
           Id: lambda
