@@ -23,9 +23,9 @@ def main() -> None:
     print(f'HyP3 API URL: {hyp3_url}')
     print(f'Earthdata user: {earthdata_username}\n')
 
-    if 'hyp3-test-api' in hyp3_url:
+    if 'hyp3-enterprise-test' in hyp3_url:
         log_group = '/aws/lambda/hyp3-flood-monitoring-test-Lambda-XUnL4S4ZZ2Cn'
-    elif 'hyp3-watermap' in hyp3_url:
+    elif 'hyp3-pdc' in hyp3_url:
         log_group = '/aws/lambda/hyp3-flood-monitoring-Lambda-q7JXd48mgEhC'
     else:
         raise ValueError('HyP3 URL not recognized')
