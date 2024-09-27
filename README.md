@@ -1,5 +1,9 @@
 # hyp3-flood-monitoring
 
+⚠️ **This repository has been permanently archived.** ⚠️
+
+*This was a successful proof-of-concept. If the project were to resume in the future, it would need to be rewritten to avoid relying on the now-obsolete [HyP3 Subscriptions](https://hyp3-docs.asf.alaska.edu/using/subscriptions/) feature.*
+
 ## Architecture overview
 
 The [Pacific Disaster Center](https://www.pdc.org/about) (PDC)
